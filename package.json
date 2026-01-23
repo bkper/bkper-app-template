@@ -1,0 +1,21 @@
+{
+  "name": "my-bkper-app",
+  "private": true,
+  "workspaces": [
+    "packages/shared",
+    "packages/web/client",
+    "packages/web/server",
+    "packages/events"
+  ],
+  "scripts": {
+    "dev": "bun run dev:shared & bun run dev:web",
+    "dev:shared": "bun --cwd packages/shared dev",
+    "dev:web": "bun --cwd packages/web/server dev",
+    "dev:events": "bun --cwd packages/events dev",
+    "build": "bun run build:shared && bun run build:web && bun run build:events",
+    "build:shared": "bun --cwd packages/shared build",
+    "build:web": "bun --cwd packages/web/client build && bun --cwd packages/web/server build",
+    "build:events": "bun --cwd packages/events build",
+    "deploy": "bkper apps deploy"
+  }
+}

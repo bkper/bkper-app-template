@@ -1,0 +1,32 @@
+id: my-app
+name: My App
+description: A Bkper app that does something useful
+
+logoUrl: https://example.com/logo.svg
+website: https://example.com
+
+ownerName: Your Name
+ownerWebsite: https://yoursite.com
+
+repoUrl: https://github.com/you/my-app
+repoPrivate: true
+
+developers: your-username
+
+# Menu integration (optional - remove if not needed)
+menuUrl: https://${id}.bkper.app?bookId=${book.id}
+menuUrlDev: http://localhost:8787?bookId=${book.id}
+
+# Event handling (optional - remove if not needed)
+webhookUrl: https://${id}.bkper.app/events
+webhookUrlDev: http://localhost:8788/events
+apiVersion: v5
+events:
+  - TRANSACTION_CHECKED
+
+# Developer tooling
+skills:
+  autoUpdate: true
+  installed:
+    - bkper-app-dev
+    - bkper-web-dev
