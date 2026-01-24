@@ -24,9 +24,3 @@ apiVersion: v5
 events:
   - TRANSACTION_CHECKED
 
-# Developer tooling
-skills:
-  autoUpdate: true
-  installed:
-    - bkper-app-dev
-    - bkper-web-dev
