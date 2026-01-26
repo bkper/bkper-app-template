@@ -11,7 +11,11 @@ ownerWebsite: https://yoursite.com
 repoUrl: https://github.com/you/my-app
 repoPrivate: true
 
-developers: your-username
+# Developers usernames and/or domain
+developers: someuser *@yoursite.com
+
+# Users usernames and/or domain
+users: someuser *@yoursite.com
 
 # Menu integration (optional - remove if not needed)
 menuUrl: https://${id}.bkper.app?bookId=${book.id}
@@ -19,8 +23,7 @@ menuUrlDev: http://localhost:8787?bookId=${book.id}
 
 # Event handling (optional - remove if not needed)
 webhookUrl: https://${id}.bkper.app/events
-webhookUrlDev: http://localhost:8788/events
+webhookUrlDev: https://${id}-dev.bkper.app/events
 apiVersion: v5
 events:
-  - TRANSACTION_CHECKED
-
+    - TRANSACTION_CHECKED
