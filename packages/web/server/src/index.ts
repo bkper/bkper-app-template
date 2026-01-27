@@ -24,4 +24,13 @@ app.get('/', async (c) => {
   });
 });
 
+// === Test endpoints for CLI integration tests ===
+
+// Read from KV
+app.get('/test/kv/:key', async (c) => {
+  const key = c.req.param('key');
+  const value = await c.env.CACHE.get(key);
+  return c.json({ key, value, found: value !== null });
+});
+
 export default app;
