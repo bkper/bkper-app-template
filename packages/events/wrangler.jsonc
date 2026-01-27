@@ -3,5 +3,8 @@
   "name": "my-app-events",
   "main": "src/index.ts",
   "compatibility_date": "2025-01-15",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "kv_namespaces": [
+    { "binding": "CACHE" }
+  ]
 }

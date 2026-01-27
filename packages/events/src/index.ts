@@ -5,9 +5,9 @@ import { Bkper, Book } from 'bkper-js';
 import { handleTransactionChecked } from './handlers/transaction-checked.js';
 import type { EventResult } from '@my-app/shared';
 
-type Env = {
-  BKPER_API_KEY?: string;
-};
+// Example KV cache usage (CACHE is auto-provisioned by Bkper Platform)
+// const cached = await c.env.CACHE.get('my-key');
+// await c.env.CACHE.put('my-key', 'value', { expirationTtl: 3600 });
 
 const app = new Hono<{ Bindings: Env }>();
 

@@ -2,10 +2,6 @@ import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 
-type Env = {
-  BKPER_API_KEY?: string;
-};
-
 const app = new Hono<{ Bindings: Env }>();
 
 app.use(logger());
