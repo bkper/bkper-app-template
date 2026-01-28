@@ -40,3 +40,13 @@ See `bkperapp.yaml` for app configuration including:
 - Menu integration URLs
 - Event webhook URLs
 - Developer access
+- Deployment settings (assets path, KV namespaces)
+
+### KV Storage
+
+The template uses Cloudflare KV for caching and state. See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for details on:
+- Creating and managing KV namespaces
+- Reading and writing values
+- TTL and expiration
+
+KV bindings are configured in the `deployment` section of `bkperapp.yaml`.

@@ -5,9 +5,9 @@ import { Bkper, Book } from 'bkper-js';
 import { handleTransactionChecked } from './handlers/transaction-checked.js';
 import type { EventResult } from '@my-app/shared';
 
-// Example KV cache usage (CACHE is auto-provisioned by Bkper Platform)
-// const cached = await c.env.CACHE.get('my-key');
-// await c.env.CACHE.put('my-key', 'value', { expirationTtl: 3600 });
+// Example KV cache usage (KV is auto-provisioned by Bkper Platform when bindings: [KV] is set in bkperapp.yaml)
+// const cached = await c.env.KV.get('my-key');
+// await c.env.KV.put('my-key', 'value', { expirationTtl: 3600 });
 
 // Events worker is accessed at /events/* via dispatch, so use basePath
 const app = new Hono<{ Bindings: Env }>().basePath('/events');
@@ -59,14 +59,14 @@ app.post('/', async (c) => {
 // Write to KV
 app.post('/test/kv', async (c) => {
   const { key, value } = await c.req.json<{ key: string; value: string }>();
-  await c.env.CACHE.put(key, value);
+  await c.env.KV.put(key, value);
   return c.json({ success: true, key });
 });
 
 // Read from KV
 app.get('/test/kv/:key', async (c) => {
   const key = c.req.param('key');
-  const value = await c.env.CACHE.get(key);
+  const value = await c.env.KV.get(key);
   return c.json({ key, value, found: value !== null });
 });
 

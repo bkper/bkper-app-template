@@ -27,3 +27,13 @@ webhookUrlDev: https://${id}-dev.bkper.app/events
 apiVersion: v5
 events:
     - TRANSACTION_CHECKED
+
+# Deployment configuration (see https://developers.cloudflare.com/kv/)
+deployment:
+  web:
+    bundle: packages/web/server/dist
+    # assets: packages/web/client/dist  # Disabled until platform asset upload is implemented
+  events:
+    bundle: packages/events/dist
+  bindings:
+    - KV

@@ -7,6 +7,9 @@
     "packages/web/server",
     "packages/events"
   ],
+  "devDependencies": {
+    "esbuild": "^0.24"
+  },
   "scripts": {
     "dev": "bun run dev:shared & bun run dev:web",
     "dev:shared": "bun --cwd packages/shared dev",

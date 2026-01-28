@@ -29,7 +29,7 @@ app.get('/', async (c) => {
 // Read from KV
 app.get('/test/kv/:key', async (c) => {
   const key = c.req.param('key');
-  const value = await c.env.CACHE.get(key);
+  const value = await c.env.KV.get(key);
   return c.json({ key, value, found: value !== null });
 });
 
