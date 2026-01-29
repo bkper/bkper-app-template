@@ -35,13 +35,15 @@ apiVersion: v5
 events:
   - TRANSACTION_CHECKED
 
-# Deployment configuration (see https://developers.cloudflare.com/kv/)
+# Deployment configuration
 deployment:
   web:
-    bundle: packages/web/server/dist
-    assets: packages/web/client/dist
+    main: packages/web/server/src/index.ts
+    client: packages/web/client
   events:
-    bundle: packages/events/dist
-  # Platform services - https://developers.cloudflare.com/kv/
+    main: packages/events/src/index.ts
   services:
     - KV
+  secrets:
+    - BKPER_API_KEY
+  compatibility_date: "2026-01-29"

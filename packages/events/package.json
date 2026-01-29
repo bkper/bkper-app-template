@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "scripts": {
-    "build": "esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js --platform=node --sourcemap"
-  },
   "dependencies": {
     "@my-app/shared": "workspace:*",
     "bkper-js": "latest",

@@ -9,6 +9,11 @@ dist/
 
 # Wrangler
 .wrangler/
+
+# Miniflare persistence
+.mf/
+
+# Local dev secrets
 .dev.vars
 
 # IDE

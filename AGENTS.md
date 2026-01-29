@@ -24,94 +24,78 @@ packages/
 
 ## Development Workflow
 
-### Web Handler (UI Development)
-
-Start the local development server with hot-reload:
+### Starting Development
 
 ```bash
-bun run dev
+# Install dependencies
+bun install
+
+# Start development server
+bkper apps dev
 ```
 
-The Vite dev server provides instant feedback on UI changes. Keep a browser window open to see changes in real-time.
+This single command:
+- Starts the Vite dev server for the client (HMR enabled)
+- Starts Miniflare to simulate the Workers runtime
+- Watches server files and hot-reloads on changes
+- Watches events files and auto-deploys to dev environment
 
-### Events Handler (Webhook Development)
-
-Events are tested by deploying to the development environment:
+### Building for Deployment
 
 ```bash
-bun run deploy:dev:events
+bkper apps build
 ```
 
-This deploys **only the events handler** to `https://{app-id}-dev.bkper.app/events`. The dev environment URL is stable and configured in `bkper.yaml` as `webhookUrlDev`.
+This builds all configured handlers:
+- Web client (Vite) → `dist/web/client/`
+- Web server (esbuild) → `dist/web/server/`
+- Events handler (esbuild) → `dist/events/`
 
-**Development cycle:**
-1. Make code changes to `packages/events/src/`
-2. Run `bun run deploy:dev:events`
-3. Trigger events from Bkper (check a transaction, update an account, etc.)
-4. Check the response in Bkper's bot log
-5. Repeat
-
-### Continuous Development Pattern
-
-When actively iterating on the events handler:
-
-- Watch `packages/events/src/` for changes
-- On file change, run `bun run deploy:dev:events`
-- Report deployment status
-
-This pattern enables rapid iteration without manual deploy commands.
-
-## Deployment
-
-### To Production
+### Deploying
 
 ```bash
-bun run deploy
+# Deploy to production
+bkper apps deploy
+
+# Deploy to development
+bkper apps deploy --dev
 ```
 
-Builds all packages (`predeploy` runs automatically) and deploys **web handler** to `https://{app-id}.bkper.app`.
+### Configuration
 
-For events handler:
-```bash
-bkper apps deploy --events
+The `bkper.yaml` file is the single source of truth:
+
+```yaml
+deployment:
+  web:
+    main: packages/web/server/src/index.ts  # Worker entry point
+    client: packages/web/client              # Vite project root
+  events:
+    main: packages/events/src/index.ts       # Events handler entry point
+  services:
+    - KV                                      # Cloudflare KV enabled
+  secrets:
+    - BKPER_API_KEY                           # User-defined secrets
+  compatibility_date: "2026-01-29"           # Workers runtime version
 ```
 
-### To Development
+### Local Secrets
 
-**Web handler** (deploys web to dev environment):
-```bash
-bun run deploy:dev
-```
+1. Copy `.dev.vars.example` to `.dev.vars`
+2. Add your local development values
+3. `.dev.vars` is gitignored
 
-**Events handler** (deploys events to dev environment):
-```bash
-bun run deploy:dev:events
-```
+### Generated Files
 
-Builds and deploys to `https://{app-id}-dev.bkper.app`.
+- `env.d.ts` - TypeScript types for the Worker environment (auto-generated, versioned)
+- `.dev.vars.example` - Template for local secrets (versioned)
 
-## Configuration
-
-See `bkper.yaml` for app configuration:
-
-- **App metadata**: name, description, logo
-- **Menu integration**: URLs for the popup UI
-- **Event handling**: webhook URLs and subscribed events
-- **Developer access**: who can update the app
-- **Deployment settings**: bundle paths, KV storage
-
-### Key URLs
+## Key URLs
 
 | Environment | Web Handler | Events Handler |
 |-------------|-------------|----------------|
-| Development | `http://localhost:*` (local Vite) | `https://{id}-dev.bkper.app/events` |
+| Development | `http://localhost:8787` | `https://{id}-dev.bkper.app/events` |
 | Production | `https://{id}.bkper.app` | `https://{id}.bkper.app/events` |
-
-### KV Storage
-
-Cloudflare KV is available for caching and state. Access via the `CACHE` binding (or as configured in `bkper.yaml`).
-
-See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for usage patterns.
 
 ## Common Tasks
 
@@ -119,7 +103,7 @@ See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for usa
 
 1. Add the event type to `bkper.yaml` under `events:`
 2. Update the handler in `packages/events/src/index.ts`
-3. Deploy to dev: `bun run deploy:dev:events`
+3. Deploy to dev: `bkper apps deploy --dev`
 4. Test by triggering the event in Bkper
 
 ### Adding a New API Route
@@ -130,3 +114,24 @@ See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for usa
 ### Sharing Code Between Web and Events
 
 Put shared code in `packages/shared/src/` and import from `@my-app/shared`.
+
+### Adding Secrets
+
+1. Add the secret name to `bkper.yaml` under `deployment.secrets:`
+2. Run `bkper apps build` to regenerate `env.d.ts`
+3. Set the secret value: `bkper apps secrets put SECRET_NAME`
+4. For local dev, add to `.dev.vars`
+
+### KV Storage
+
+Cloudflare KV is available for caching and state. Access via the `KV` binding.
+
+```typescript
+// Read
+const value = await c.env.KV.get('my-key');
+
+// Write with TTL
+await c.env.KV.put('my-key', 'value', { expirationTtl: 3600 });
+```
+
+See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for more usage patterns.

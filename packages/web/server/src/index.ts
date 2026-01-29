@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
+import type { Env } from '../../../env.js';
 
 const app = new Hono<{ Bindings: Env }>();
 

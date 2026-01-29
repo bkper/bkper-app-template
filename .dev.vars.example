@@ -1,0 +1,5 @@
+# .dev.vars.example
+# Copy this file to .dev.vars and fill in your local development values
+# .dev.vars is gitignored and used by the Bkper CLI for local development
+
+BKPER_API_KEY=your-bkper-api-key-here
