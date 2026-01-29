@@ -13,40 +13,120 @@
 
 ## Structure
 
-- `packages/web/` - User-facing UI and API
-- `packages/events/` - Background event processing
-- `packages/shared/` - Shared code between web and events
+```
+packages/
+├── shared/     — Shared types and utilities
+├── web/
+│   ├── client/ — Frontend UI (Vite + Lit)
+│   └── server/ — Backend API (Hono)
+└── events/     — Event handler (webhooks)
+```
 
-## Development
+## Development Workflow
+
+### Web Handler (UI Development)
+
+Start the local development server with hot-reload:
 
 ```bash
-# Install dependencies
-bun install
-
-# Start development server
 bun run dev
-
-# Build for production
-bun run build
-
-# Deploy to Bkper Platform
-bkper deploy
 ```
+
+The Vite dev server provides instant feedback on UI changes. Keep a browser window open to see changes in real-time.
+
+### Events Handler (Webhook Development)
+
+Events are tested by deploying to the development environment:
+
+```bash
+bun run deploy:dev:events
+```
+
+This deploys **only the events handler** to `https://{app-id}-dev.bkper.app/events`. The dev environment URL is stable and configured in `bkperapp.yaml` as `webhookUrlDev`.
+
+**Development cycle:**
+1. Make code changes to `packages/events/src/`
+2. Run `bun run deploy:dev:events`
+3. Trigger events from Bkper (check a transaction, update an account, etc.)
+4. Check the response in Bkper's bot log
+5. Repeat
+
+### Continuous Development Pattern
+
+When actively iterating on the events handler:
+
+- Watch `packages/events/src/` for changes
+- On file change, run `bun run deploy:dev:events`
+- Report deployment status
+
+This pattern enables rapid iteration without manual deploy commands.
+
+## Deployment
+
+### To Production
+
+```bash
+bun run deploy
+```
+
+Builds all packages (`predeploy` runs automatically) and deploys **web handler** to `https://{app-id}.bkper.app`.
+
+For events handler:
+```bash
+bkper apps deploy --events
+```
+
+### To Development
+
+**Web handler** (deploys web to dev environment):
+```bash
+bun run deploy:dev
+```
+
+**Events handler** (deploys events to dev environment):
+```bash
+bun run deploy:dev:events
+```
+
+Builds and deploys to `https://{app-id}-dev.bkper.app`.
 
 ## Configuration
 
-See `bkperapp.yaml` for app configuration including:
-- App metadata (name, description, logo)
-- Menu integration URLs
-- Event webhook URLs
-- Developer access
-- Deployment settings (assets path, KV namespaces)
+See `bkperapp.yaml` for app configuration:
+
+- **App metadata**: name, description, logo
+- **Menu integration**: URLs for the popup UI
+- **Event handling**: webhook URLs and subscribed events
+- **Developer access**: who can update the app
+- **Deployment settings**: bundle paths, KV bindings
+
+### Key URLs
+
+| Environment | Web Handler | Events Handler |
+|-------------|-------------|----------------|
+| Development | `http://localhost:*` (local Vite) | `https://{id}-dev.bkper.app/events` |
+| Production | `https://{id}.bkper.app` | `https://{id}.bkper.app/events` |
 
 ### KV Storage
 
-The template uses Cloudflare KV for caching and state. See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for details on:
-- Creating and managing KV namespaces
-- Reading and writing values
-- TTL and expiration
+Cloudflare KV is available for caching and state. Access via the `CACHE` binding (or as configured in `bkperapp.yaml`).
 
-KV bindings are configured in the `deployment` section of `bkperapp.yaml`.
+See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for usage patterns.
+
+## Common Tasks
+
+### Adding a New Event Handler
+
+1. Add the event type to `bkperapp.yaml` under `events:`
+2. Update the handler in `packages/events/src/index.ts`
+3. Deploy to dev: `bun run deploy:dev:events`
+4. Test by triggering the event in Bkper
+
+### Adding a New API Route
+
+1. Add the route in `packages/web/server/src/index.ts`
+2. The dev server hot-reloads automatically
+
+### Sharing Code Between Web and Events
+
+Put shared code in `packages/shared/src/` and import from `@my-app/shared`.

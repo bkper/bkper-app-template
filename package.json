@@ -19,6 +19,9 @@
     "build:shared": "bun --cwd packages/shared build",
     "build:web": "bun --cwd packages/web/client build && bun --cwd packages/web/server build",
     "build:events": "bun --cwd packages/events build",
-    "deploy": "bkper apps deploy"
+    "predeploy": "bun run build",
+    "deploy": "bkper apps deploy",
+    "deploy:dev": "bun run build && bkper apps deploy --dev",
+    "deploy:dev:events": "bun run build && bkper apps deploy --dev --events"
   }
 }
