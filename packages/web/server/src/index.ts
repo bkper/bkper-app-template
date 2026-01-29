@@ -10,19 +10,10 @@ app.use(prettyJSON());
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
-// Root route - serves as menu entry point
-// Receives bookId from Bkper when opened from menu
-app.get('/', async (c) => {
-  const bookId = c.req.query('bookId');
-  
-  // The static assets (index.html) will be served by Wrangler's asset handling
-  // This route can be used for server-side rendering or API calls
-  
-  return c.json({
-    message: 'Menu endpoint',
-    bookId,
-  });
-});
+// Root route is now served by Cloudflare Workers static assets (index.html)
+// The server only handles API routes
+// If you need server-side rendering, you can add logic here to detect
+// API requests (Content-Type: application/json) vs browser requests
 
 // === Test endpoints for CLI integration tests ===
 

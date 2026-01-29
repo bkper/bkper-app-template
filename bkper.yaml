@@ -39,7 +39,7 @@ events:
 deployment:
   web:
     bundle: packages/web/server/dist
-    # assets: packages/web/client/dist  # Disabled until platform asset upload is implemented
+    assets: packages/web/client/dist
   events:
     bundle: packages/events/dist
   # Platform services - https://developers.cloudflare.com/kv/
