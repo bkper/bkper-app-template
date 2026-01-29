@@ -1,5 +1,5 @@
 # Bkper App Configuration
-# Full reference: https://raw.githubusercontent.com/bkper/bkper-cli/main/docs/bkperapp-reference.yaml
+# Full reference: https://raw.githubusercontent.com/bkper/bkper-cli/main/docs/bkper-reference.yaml
 
 id: my-app
 name: My App

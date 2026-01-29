@@ -5,7 +5,7 @@ import { Bkper, Book } from 'bkper-js';
 import { handleTransactionChecked } from './handlers/transaction-checked.js';
 import type { EventResult } from '@my-app/shared';
 
-// Example KV cache usage (KV is auto-provisioned by Bkper Platform when bindings: [KV] is set in bkperapp.yaml)
+// Example KV cache usage (KV is auto-provisioned by Bkper Platform when bindings: [KV] is set in bkper.yaml)
 // const cached = await c.env.KV.get('my-key');
 // await c.env.KV.put('my-key', 'value', { expirationTtl: 3600 });
 

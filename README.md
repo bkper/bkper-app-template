@@ -93,7 +93,7 @@ Deploys to the development environment at `https://{app-id}-dev.bkper.app`.
 
 ## Configuration
 
-All configuration is centralized in `bkperapp.yaml`:
+All configuration is centralized in `bkper.yaml`:
 
 ```yaml
 id: my-app

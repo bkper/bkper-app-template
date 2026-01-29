@@ -42,7 +42,7 @@ Events are tested by deploying to the development environment:
 bun run deploy:dev:events
 ```
 
-This deploys **only the events handler** to `https://{app-id}-dev.bkper.app/events`. The dev environment URL is stable and configured in `bkperapp.yaml` as `webhookUrlDev`.
+This deploys **only the events handler** to `https://{app-id}-dev.bkper.app/events`. The dev environment URL is stable and configured in `bkper.yaml` as `webhookUrlDev`.
 
 **Development cycle:**
 1. Make code changes to `packages/events/src/`
@@ -92,7 +92,7 @@ Builds and deploys to `https://{app-id}-dev.bkper.app`.
 
 ## Configuration
 
-See `bkperapp.yaml` for app configuration:
+See `bkper.yaml` for app configuration:
 
 - **App metadata**: name, description, logo
 - **Menu integration**: URLs for the popup UI
@@ -109,7 +109,7 @@ See `bkperapp.yaml` for app configuration:
 
 ### KV Storage
 
-Cloudflare KV is available for caching and state. Access via the `CACHE` binding (or as configured in `bkperapp.yaml`).
+Cloudflare KV is available for caching and state. Access via the `CACHE` binding (or as configured in `bkper.yaml`).
 
 See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for usage patterns.
 
@@ -117,7 +117,7 @@ See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for usa
 
 ### Adding a New Event Handler
 
-1. Add the event type to `bkperapp.yaml` under `events:`
+1. Add the event type to `bkper.yaml` under `events:`
 2. Update the handler in `packages/events/src/index.ts`
 3. Deploy to dev: `bun run deploy:dev:events`
 4. Test by triggering the event in Bkper
