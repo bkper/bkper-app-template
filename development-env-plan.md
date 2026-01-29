@@ -223,6 +223,7 @@ deployment:
     secrets: # User-defined secrets
         - API_KEY
         - WEBHOOK_URL
+    compatibility_date: "2026-01-29" # Workers runtime compatibility (set to current date on init)
 ```
 
 **Backward Compatibility:**
@@ -495,7 +496,123 @@ deployment:
     secrets:
         - API_KEY
         - WEBHOOK_URL
+    compatibility_date: "2026-01-29"
 ```
+
+---
+
+## Technical Deep Dive: Workers Compatibility
+
+This section explains the technical decisions based on research of Cloudflare's official tooling (Wrangler, Vite plugin, and Miniflare).
+
+### esbuild Configuration Rationale
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| `target` | `es2024` | Workers runtime uses V8 14.2+ which supports ES2024. Wrangler and the official Vite plugin use this target. Avoid `esnext` as it's not a fixed target. |
+| `format` | `esm` | Modern Workers require ES Modules format. Service Worker format (IIFE) is legacy. |
+| `conditions` | `['workerd', 'worker', 'browser']` | Critical for package resolution. Allows npm packages to provide Worker-specific exports via [conditional exports](https://nodejs.org/api/packages.html#conditional-exports). |
+| `platform` | undefined or `neutral` | Workers are neither Node.js nor browsers. Wrangler defaults to undefined (browser-like). |
+
+**Why `conditions` matters:**
+
+Many modern npm packages use conditional exports to provide different implementations for different runtimes:
+
+```json
+// Example package.json
+{
+  "exports": {
+    ".": {
+      "workerd": "./dist/worker.js",    // Worker-optimized version
+      "worker": "./dist/worker.js",      // Generic worker version
+      "browser": "./dist/browser.js",    // Browser version
+      "node": "./dist/node.js",          // Node.js version
+      "default": "./dist/index.js"
+    }
+  }
+}
+```
+
+Without the `conditions` setting, esbuild would use the wrong exports, potentially bundling Node.js or browser code that won't work in Workers.
+
+**Why externalize `cloudflare:*` and `node:*`:**
+
+- `cloudflare:workers` - Durable Objects, WorkerEntrypoint, RpcTarget
+- `cloudflare:sockets` - TCP/UDP sockets API
+- `cloudflare:email` - Email Workers API
+- `node:buffer`, `node:crypto`, etc. - Built-in modules provided by `nodejs_compat`
+
+These are provided by the Workers runtime and must not be bundled.
+
+### Miniflare Configuration Rationale
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| `compatibilityDate` | `"2026-01-29"` | Controls which runtime features are enabled. Must match production to avoid surprises. Set to current date on `bkper apps init`. |
+| `compatibilityFlags` | `["nodejs_compat"]` | Enables Node.js built-in modules support. Matches common Bkper app patterns. |
+| `liveReload` | `true` | Injects reload script into HTML responses for automatic browser refresh. |
+| `kvPersist` | `"./.mf/kv"` | Persist KV data across restarts. Useful for development without losing data. |
+
+**Understanding Miniflare Versioning vs `compatibility_date`:**
+
+These are two different concepts that work together:
+
+1. **Miniflare Package Version** (e.g., `4.20260128.0`):
+   - The simulator/runtime binary version
+   - Uses date-based versioning tied to `workerd` releases
+   - Format: `MAJOR.YYYYMMDD.PATCH`
+   - Using `^4` gets latest workerd improvements and bug fixes
+
+2. **`compatibility_date` Config Setting**:
+   - Controls which runtime features/behaviors are enabled
+   - Acts as a "snapshot" of the runtime on that date
+   - Same setting used in production Workers
+   - This is your **stability control**, not the Miniflare version
+
+**How they work together:**
+```
+Miniflare v4.20260128.0 (latest workerd)
+  ↓
+  Can simulate ANY compatibility_date
+  ↓
+  Your config: compatibility_date: "2026-01-29"
+  ↓
+  Enables features available up to 2026-01-29
+  Disables features added after that date
+  ↓
+  Matches production behavior for that date
+```
+
+This means you can safely use `^4` for Miniflare (get latest simulator) while `compatibility_date` ensures consistent runtime behavior between local dev and production.
+
+**KV namespace binding format:**
+
+Miniflare v3+ prefers object format for named bindings:
+
+```typescript
+// Correct
+kvNamespaces: { KV: "kv-local" }
+
+// Also works but less clear
+kvNamespaces: ["KV"]
+```
+
+The object format makes it explicit what binding name maps to what namespace ID.
+
+### Vite Build Output Path
+
+Vite's `outDir` is relative to the `root` option. To ensure output goes to the correct location:
+
+```typescript
+{
+  root: "packages/web/client",  // Vite serves from here
+  build: {
+    outDir: path.resolve(process.cwd(), "dist/web/client"),  // Absolute path to project root
+  }
+}
+```
+
+Without `path.resolve()`, output would go to `packages/web/client/dist/web/client`.
 
 ---
 
@@ -528,13 +645,20 @@ src/cli.ts          ← MODIFY: Register dev and build commands
 ```json
 {
     "dependencies": {
-        "miniflare": "^3",
-        "vite": "^6",
-        "esbuild": "^0.27",
-        "chokidar": "^3"
+        "miniflare": "^4",
+        "vite": "^7.3.0",
+        "esbuild": "^0.27.0",
+        "chokidar": "^5.0.0",
+        "get-port": "^7.1.0"
     }
 }
 ```
+
+**Version Strategy:**
+- Use caret (`^`) to allow minor and patch updates (semver-compliant)
+- Miniflare uses date-based versioning (`4.YYYYMMDD.patch`) tied to `workerd` releases
+- `compatibility_date` in config controls runtime behavior, not the Miniflare version
+- Staying current with Miniflare ensures bug fixes and simulator improvements
 
 ### Phase 2: Core Implementation
 
@@ -553,10 +677,21 @@ interface SourceDeploymentConfig {
     };
     services?: string[];
     secrets?: string[];
+    compatibilityDate?: string; // Workers runtime compatibility date (camelCase in code, maps to compatibility_date in YAML)
 }
 
 function isSourceConfig(deployment: any): boolean {
     return deployment?.web?.main?.endsWith(".ts") || deployment?.events?.main?.endsWith(".ts");
+}
+
+// Example YAML mapping
+function loadDeploymentConfig(): SourceDeploymentConfig {
+    const yaml = readYamlFile('bkper.yaml');
+    return {
+        ...yaml.deployment,
+        // Map snake_case (YAML) to camelCase (TypeScript)
+        compatibilityDate: yaml.deployment.compatibility_date,
+    };
 }
 ```
 
@@ -755,16 +890,41 @@ export function loadDevVars(
 
 import * as esbuild from "esbuild";
 
+// Plugin to handle cloudflare:* and node:* imports
+// These are provided by the Workers runtime and should not be bundled
+const workersExternalsPlugin: esbuild.Plugin = {
+    name: "workers-externals",
+    setup(build) {
+        // Cloudflare-specific imports (Durable Objects, Sockets, etc.)
+        build.onResolve({ filter: /^cloudflare:.*/ }, () => ({ external: true }));
+        
+        // Node.js built-in modules (when using nodejs_compat)
+        build.onResolve({ filter: /^node:.*/ }, () => ({ external: true }));
+    },
+};
+
 export async function buildWorker(entryPoint: string): Promise<string> {
     const result = await esbuild.build({
         entryPoints: [entryPoint],
         bundle: true,
+        
+        // Format: Workers use ES Modules
         format: "esm",
-        platform: "neutral",
-        target: "esnext",
+        
+        // Target: Workers runtime uses V8 with ES2024 support
+        // Matches Wrangler and Cloudflare Vite plugin
+        target: "es2024",
+        
+        // Conditions: Critical for proper package resolution
+        // Allows packages to provide Worker-specific exports
+        conditions: ["workerd", "worker", "browser"],
+        
+        // Output
         write: false,
         sourcemap: "inline",
-        external: ["cloudflare:*"],
+        
+        // Plugins
+        plugins: [workersExternalsPlugin],
     });
 
     return result.outputFiles[0].text;
@@ -775,11 +935,12 @@ export async function buildWorkerToFile(entryPoint: string, outfile: string): Pr
         entryPoints: [entryPoint],
         bundle: true,
         format: "esm",
-        platform: "neutral",
-        target: "esnext",
+        target: "es2024",
+        conditions: ["workerd", "worker", "browser"],
         outfile,
         sourcemap: true,
-        external: ["cloudflare:*"],
+        minify: process.env.NODE_ENV === "production",
+        plugins: [workersExternalsPlugin],
     });
 }
 ```
@@ -789,12 +950,20 @@ export async function buildWorkerToFile(entryPoint: string, outfile: string): Pr
 ```typescript
 // src/dev/miniflare.ts
 
-import { Miniflare } from "miniflare";
+import { Miniflare, Log, LogLevel } from "miniflare";
 import { buildWorker } from "./esbuild.js";
+
+interface WorkerServerOptions {
+    port: number;
+    kvNamespaces?: string[];
+    vars?: Record<string, string>;
+    compatibilityDate?: string;
+    persist?: boolean;
+}
 
 export async function createWorkerServer(
     entryPoint: string,
-    options: { port: number; kvNamespaces?: string[]; vars?: Record<string, string> },
+    options: WorkerServerOptions,
 ): Promise<Miniflare> {
     const script = await buildWorker(entryPoint);
 
@@ -802,7 +971,28 @@ export async function createWorkerServer(
         modules: true,
         script,
         port: options.port,
-        kvNamespaces: options.kvNamespaces || [],
+        
+        // Compatibility settings (match production)
+        compatibilityDate: options.compatibilityDate || "2026-01-29",
+        compatibilityFlags: ["nodejs_compat"],
+        
+        // Logging
+        log: new Log(LogLevel.INFO),
+        
+        // Live reload (inject script into HTML responses)
+        liveReload: true,
+        
+        // KV namespaces - convert array to object format
+        // ["KV"] -> { KV: "kv-local" }
+        kvNamespaces: options.kvNamespaces?.reduce(
+            (acc, ns) => ({ ...acc, [ns]: `${ns.toLowerCase()}-local` }),
+            {},
+        ),
+        
+        // Persist KV data across restarts
+        kvPersist: options.persist !== false ? "./.mf/kv" : false,
+        
+        // Environment variables and secrets
         bindings: options.vars || {},
     });
 
@@ -822,6 +1012,7 @@ export async function reloadWorker(mf: Miniflare, entryPoint: string) {
 // src/dev/vite.ts
 
 import { createServer, ViteDevServer } from "vite";
+import path from "path";
 
 export async function createClientServer(
     root: string,
@@ -832,8 +1023,17 @@ export async function createClientServer(
         server: {
             port: options.port,
             proxy: {
-                "/api": `http://localhost:${options.serverPort}`,
+                // Proxy API requests to Miniflare
+                "/api": {
+                    target: `http://localhost:${options.serverPort}`,
+                    changeOrigin: true,
+                },
             },
+        },
+        // Build output relative to project root (not client root)
+        build: {
+            outDir: path.resolve(process.cwd(), "dist/web/client"),
+            emptyOutDir: true,
         },
     });
 
@@ -878,8 +1078,10 @@ export async function dev(options: { port?: number; serverPort?: number }) {
     if (hasWeb) {
         mf = await createWorkerServer(deployConfig.web.main, {
             port: serverPort,
-            kvNamespaces: deployConfig.services?.includes("KV") ? ["CACHE"] : [],
+            kvNamespaces: deployConfig.services?.includes("KV") ? ["KV"] : [],
             vars: devVars,
+            compatibilityDate: deployConfig.compatibilityDate,
+            persist: true,
         });
 
         // Start web client (Vite)
@@ -951,6 +1153,7 @@ import { buildWorkerToFile } from "../../dev/esbuild.js";
 import { ensureTypesUpToDate } from "../../dev/types.js";
 import { loadDeploymentConfig } from "./config.js";
 import { statSync } from "fs";
+import path from "path";
 
 export async function build() {
     const deployConfig = await loadDeploymentConfig();
@@ -967,7 +1170,10 @@ export async function build() {
     if (hasWeb) {
         await viteBuild({
             root: deployConfig.web.client,
-            build: { outDir: "dist/web/client" },
+            build: { 
+                outDir: path.resolve(process.cwd(), "dist/web/client"),
+                emptyOutDir: true,
+            },
             logLevel: "silent",
         });
         const clientSize = getDirSize("dist/web/client");
@@ -998,12 +1204,58 @@ export async function build() {
 4. Update `AGENTS.md` with new workflow
 5. Update README with simplified instructions
 
-### Phase 4: Documentation & Skills
+### Phase 4: Dynamic Compatibility Date on Init
+
+When running `bkper apps init`, the CLI should automatically set `compatibility_date` to the current date, following Cloudflare's recommendation:
+
+```typescript
+// src/commands/apps/init.ts
+
+function generateBkperYaml(appId: string, appName: string): string {
+    // Set compatibility_date to today's date (YYYY-MM-DD format)
+    const today = new Date().toISOString().split('T')[0];
+    
+    return `
+id: ${appId}
+name: ${appName}
+description: A Bkper app
+
+menuUrl: https://\${id}.bkper.app?bookId=\${book.id}
+menuUrlDev: http://localhost:5173?bookId=\${book.id}
+
+webhookUrl: https://\${id}.bkper.app/events
+webhookUrlDev: https://\${id}-dev.bkper.app/events
+events:
+  - TRANSACTION_CHECKED
+
+deployment:
+  web:
+    main: packages/web/server/src/index.ts
+    client: packages/web/client
+  events:
+    main: packages/events/src/index.ts
+  services:
+    - KV
+  secrets:
+    - API_KEY
+  compatibility_date: "${today}"
+`;
+}
+```
+
+**Rationale:**
+- Cloudflare docs: "When you start your project, you should always set `compatibility_date` to the current date."
+- Ensures new apps start with the latest runtime features
+- Developers can update `compatibility_date` periodically by testing and updating the field in `bkper.yaml`
+- Local dev and production will use the same compatibility date for consistency
+
+### Phase 5: Documentation & Skills
 
 1. Update bkper-cli README with new commands
 2. Update bkper-app-template README
 3. Update skills with new development patterns
 4. Add troubleshooting guide
+5. Document Node.js requirements (20.19+ or 22.12+ for Vite v7)
 
 ---
 
@@ -1067,9 +1319,61 @@ bkper apps deploy
 
 ## Open Questions
 
-1. **Vite config customization** - Should we support a minimal `vite.config.ts` for advanced cases (custom plugins)?
-2. **TypeScript config** - Should CLI provide a default `tsconfig.json` or require apps to have one?
-3. **Port conflicts** - Should CLI auto-detect available ports if defaults are in use?
+### 1. Vite config customization
+
+**Decision: No custom `vite.config.ts` support initially**
+
+**Rationale:** Cloudflare's Vite plugin is extremely complex (12+ sub-plugins) to handle all edge cases. We should keep the implementation simple and only extend when there's a specific need. The CLI can provide sensible defaults that cover 95% of use cases.
+
+**Future consideration:** If needed, could add `vite.config.ts` merging support later, but ensure CLI settings take precedence to maintain consistency.
+
+### 2. TypeScript config
+
+**Decision: Apps provide their own `tsconfig.json`**
+
+**Rationale:** TypeScript settings are project-specific (strict mode, lib versions, path mappings, etc.). The CLI should not impose these. However, apps should reference the generated `env.d.ts`:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["./env.d.ts"]
+  }
+}
+```
+
+The CLI can validate that `env.d.ts` is referenced and warn if not.
+
+### 3. Port conflicts
+
+**Decision: Auto-detect available ports**
+
+**Rationale:** Development environments vary. Use a port-finding utility (like `get-port`) to automatically find available ports if defaults are in use.
+
+```typescript
+import getPort from "get-port";
+
+const clientPort = await getPort({ port: options.port || 5173 });
+const serverPort = await getPort({ port: options.serverPort || 8787 });
+```
+
+This provides a smooth experience without requiring manual port configuration.
+
+### 4. Inspector/Debugging Support
+
+**Future consideration: Add `--inspect` flag**
+
+Miniflare supports Chrome DevTools debugging via `inspectorPort`:
+
+```typescript
+const mf = new Miniflare({
+  // ...
+  inspectorPort: 9229,
+});
+```
+
+Could be exposed as: `bkper apps dev --inspect` or `bkper apps dev --inspect-port 9229`
+
+This would enable debugging Workers code with Chrome DevTools, which is valuable for complex applications.
 
 ---
 
@@ -1082,3 +1386,66 @@ bkper apps deploy
 5. [ ] Update documentation and skills (Phase 4)
 6. [ ] Test end-to-end workflow
 7. [ ] Release CLI update
+
+---
+
+## Research Appendix
+
+This plan is based on deep research of Cloudflare's official tooling:
+
+### Sources
+
+1. **@cloudflare/vite-plugin** (`workers-sdk` monorepo)
+   - How Cloudflare configures esbuild for Workers compatibility
+   - Miniflare integration patterns for local development
+   - unenv-preset for Node.js compatibility layer
+   - Virtual module system and HMR implementation
+
+2. **Wrangler** (workers-sdk)
+   - esbuild configuration and bundling approach
+   - Default settings: `target: "es2024"`, `conditions: ["workerd", "worker", "browser"]`
+   - Custom builds and module rules
+   - Conditional exports support
+
+3. **Miniflare v4**
+   - Programmatic API for creating Worker instances
+   - Configuration options for compatibility dates, flags, and bindings
+   - Hot reload via `setOptions()`
+   - Persistence and debugging features
+   - Date-based versioning tied to workerd releases
+
+4. **Vite v7**
+   - Programmatic API (`createServer`, `build`) unchanged from v6
+   - Requires Node.js 20.19+ or 22.12+
+   - Default browser target updated to `baseline-widely-available`
+
+### Key Learnings
+
+1. **Target `es2024` not `esnext`**: Workers runtime uses a specific V8 version with known capabilities. `esnext` is a moving target.
+
+2. **Conditions are critical**: Modern npm packages use conditional exports. The `workerd` condition allows packages to provide Worker-optimized code.
+
+3. **Compatibility date is set on init**: Cloudflare recommends setting `compatibility_date` to the current date when starting a new project. This should be done automatically by `bkper apps init`.
+
+4. **Miniflare versioning vs runtime behavior**: Miniflare package version (e.g., `4.20260128.0`) is the simulator version. The `compatibility_date` config controls runtime behavior. These are separate concerns - use `^4` for Miniflare to get latest simulator while `compatibility_date` ensures consistent behavior.
+
+5. **Simple is better**: Cloudflare's Vite plugin is extremely complex (handles HMR in Workers, Durable Objects, etc.). For our use case, we can use a much simpler approach.
+
+6. **Miniflare is standalone**: We don't need Wrangler. Miniflare can be embedded directly in the CLI for better control and faster iteration.
+
+7. **Latest stable versions**: As of January 2026:
+   - Miniflare v4 (date-based versioning, API unchanged from v3)
+   - Vite v7.3.1 (programmatic API unchanged from v6)
+   - esbuild 0.27.2
+   - chokidar 5.0.0
+   - get-port 7.1.0
+
+### References
+
+- [Wrangler Bundling Docs](https://developers.cloudflare.com/workers/wrangler/bundling/)
+- [Wrangler API Docs](https://developers.cloudflare.com/workers/wrangler/api/)
+- [Miniflare Documentation](https://miniflare.dev/)
+- [Workers Compatibility Dates](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
+- [Vite 7.0 Announcement](https://vite.dev/blog/announcing-vite7)
+- [Node.js Conditional Exports](https://nodejs.org/api/packages.html#conditional-exports)
+- [Runtime Keys Proposal](https://runtime-keys.proposal.wintercg.org/)
