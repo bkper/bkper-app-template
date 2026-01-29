@@ -1,11 +1,16 @@
+# Bkper App Configuration
+# Full reference: https://raw.githubusercontent.com/bkper/bkper-cli/main/docs/bkperapp-reference.yaml
+
 id: my-app
 name: My App
 description: A Bkper app that does something useful
 
 logoUrl: https://example.com/logo.svg
+logoUrlDark: https://example.com/logo-dark.svg
 website: https://example.com
 
 ownerName: Your Name
+ownerLogoUrl: https://example.com/owner-logo.png
 ownerWebsite: https://yoursite.com
 
 repoUrl: https://github.com/you/my-app
@@ -20,13 +25,15 @@ users: someuser *@yoursite.com
 # Menu integration (optional - remove if not needed)
 menuUrl: https://${id}.bkper.app?bookId=${book.id}
 menuUrlDev: http://localhost:8787?bookId=${book.id}
+menuPopupWidth: 500
+menuPopupHeight: 300
 
 # Event handling (optional - remove if not needed)
 webhookUrl: https://${id}.bkper.app/events
 webhookUrlDev: https://${id}-dev.bkper.app/events
 apiVersion: v5
 events:
-    - TRANSACTION_CHECKED
+  - TRANSACTION_CHECKED
 
 # Deployment configuration (see https://developers.cloudflare.com/kv/)
 deployment:
