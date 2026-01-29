@@ -2,7 +2,7 @@
 
 interface Env {
   // KV namespace for caching (auto-provisioned by Bkper Platform)
-  // Binding name matches the type in bkper.yaml: bindings: [KV]
+  // Service name matches the type in bkper.yaml: services: [KV]
   KV: KVNamespace;
 
   // Secrets (set via: bkper apps secrets put)

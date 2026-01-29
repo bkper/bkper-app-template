@@ -98,7 +98,7 @@ See `bkper.yaml` for app configuration:
 - **Menu integration**: URLs for the popup UI
 - **Event handling**: webhook URLs and subscribed events
 - **Developer access**: who can update the app
-- **Deployment settings**: bundle paths, KV bindings
+- **Deployment settings**: bundle paths, KV storage
 
 ### Key URLs
 

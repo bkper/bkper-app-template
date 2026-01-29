@@ -58,7 +58,7 @@ bun run deploy:dev
 
 This deploys your events handler to `https://{app-id}-dev.bkper.app/events`. Configure this URL as your webhook in the Bkper dashboard to test event handling.
 
-**Why deploy instead of local?** Webhook testing involves triggering events from Bkper and waiting for responses. The dev environment provides a stable URL and tests against the real platform (KV bindings, secrets, etc.).
+**Why deploy instead of local?** Webhook testing involves triggering events from Bkper and waiting for responses. The dev environment provides a stable URL and tests against the real platform (KV storage, secrets, etc.).
 
 ### Continuous Development
 
@@ -124,13 +124,13 @@ deployment:
     bundle: packages/web/server/dist
   events:
     bundle: packages/events/dist
-  bindings:
+  services:
     - KV
 ```
 
 ### KV Storage
 
-The template uses [Cloudflare KV](https://developers.cloudflare.com/kv/) for caching and state. KV bindings are configured in the `deployment.bindings` section.
+The template uses [Cloudflare KV](https://developers.cloudflare.com/kv/) for caching and state. KV is configured in the `deployment.services` section.
 
 ## Resources
 

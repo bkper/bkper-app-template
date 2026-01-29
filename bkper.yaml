@@ -42,5 +42,6 @@ deployment:
     # assets: packages/web/client/dist  # Disabled until platform asset upload is implemented
   events:
     bundle: packages/events/dist
-  bindings:
+  # Platform services - https://developers.cloudflare.com/kv/
+  services:
     - KV
