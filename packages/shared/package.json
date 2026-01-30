@@ -11,6 +11,9 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "scripts": {
+    "clean": "rm -rf dist node_modules"
+  },
   "devDependencies": {
     "typescript": "^5"
   }

@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "node /workspace/bkper-cli/lib/cli.js app dev",
     "build": "node /workspace/bkper-cli/lib/cli.js app build",
+    "clean": "bun run --filter \"./packages/**\" clean && rm -rf node_modules dist",
     "deploy": "bkper app deploy",
     "deploy:dev": "bkper app deploy --dev"
   }
