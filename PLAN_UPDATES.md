@@ -73,7 +73,7 @@ deployment:
 - Use `compatibility_date` (snake_case) to match Wrangler convention
 - TypeScript code uses camelCase internally, maps to/from snake_case when reading YAML
 - Cloudflare recommends setting to current date when creating new projects
-- CLI will set this automatically on `bkper apps init`
+- CLI will set this automatically on `bkper app init`
 
 ### 5. Dependencies Update
 
@@ -124,7 +124,7 @@ deployment:
   - Provides references for future work
 
 **Added Phase 4:**
-- Dynamic `compatibility_date` generation on `bkper apps init`
+- Dynamic `compatibility_date` generation on `bkper app init`
 - Code example showing how to set to current date (YYYY-MM-DD format)
 
 **Updated:**
@@ -151,7 +151,7 @@ All code examples in Phase 2 have been updated with correct configurations:
 2. **Compatibility parity** - Ensure local dev matches production behavior
 3. **KV persistence** - Verify data survives restarts
 4. **Port conflicts** - Test auto-detection when defaults are in use
-5. **Dynamic compatibility date** - Verify `bkper apps init` sets current date
+5. **Dynamic compatibility date** - Verify `bkper app init` sets current date
 6. **Miniflare v4 compatibility** - Confirm all API usage works with v4
 7. **Vite v7 compatibility** - Confirm programmatic API works with v7
 8. **Node.js version** - Test with Node 20.19+ and 22.12+

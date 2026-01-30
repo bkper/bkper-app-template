@@ -31,7 +31,7 @@ packages/
 bun install
 
 # Start development server
-bkper apps dev
+bkper app dev
 ```
 
 This single command:
@@ -43,7 +43,7 @@ This single command:
 ### Building for Deployment
 
 ```bash
-bkper apps build
+bkper app build
 ```
 
 This builds all configured handlers:
@@ -55,10 +55,10 @@ This builds all configured handlers:
 
 ```bash
 # Deploy to production
-bkper apps deploy
+bkper app deploy
 
 # Deploy to development
-bkper apps deploy --dev
+bkper app deploy --dev
 ```
 
 ### Configuration
@@ -103,7 +103,7 @@ deployment:
 
 1. Add the event type to `bkper.yaml` under `events:`
 2. Update the handler in `packages/events/src/index.ts`
-3. Deploy to dev: `bkper apps deploy --dev`
+3. Deploy to dev: `bkper app deploy --dev`
 4. Test by triggering the event in Bkper
 
 ### Adding a New API Route
@@ -118,8 +118,8 @@ Put shared code in `packages/shared/src/` and import from `@my-app/shared`.
 ### Adding Secrets
 
 1. Add the secret name to `bkper.yaml` under `deployment.secrets:`
-2. Run `bkper apps build` to regenerate `env.d.ts`
-3. Set the secret value: `bkper apps secrets put SECRET_NAME`
+2. Run `bkper app build` to regenerate `env.d.ts`
+3. Set the secret value: `bkper app secrets put SECRET_NAME`
 4. For local dev, add to `.dev.vars`
 
 ### KV Storage

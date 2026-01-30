@@ -8,9 +8,9 @@
     "packages/events"
   ],
   "scripts": {
-    "dev": "node /workspace/bkper-cli/lib/cli.js apps dev",
-    "build": "node /workspace/bkper-cli/lib/cli.js apps build",
-    "deploy": "bkper apps deploy",
-    "deploy:dev": "bkper apps deploy --dev"
+    "dev": "node /workspace/bkper-cli/lib/cli.js app dev",
+    "build": "node /workspace/bkper-cli/lib/cli.js app build",
+    "deploy": "bkper app deploy",
+    "deploy:dev": "bkper app deploy --dev"
   }
 }
