@@ -15,6 +15,10 @@ export async function handleTransactionChecked(
   book: Book,
   event: bkper.Event
 ): Promise<EventResult> {
+  if (!event.data) {
+    return { result: false };
+  }
+
   const operation = event.data.object as bkper.TransactionOperation;
   const transaction = operation.transaction;
 
@@ -34,7 +38,14 @@ export async function handleTransactionChecked(
   console.log(`Amount: ${transaction.amount}`);
   console.log(`Description: ${transaction.description}`);
 
-  const bookAnchor = buildBookAnchor(book.getId(), book.getName());
+  const bookId = book.getId();
+  const bookName = book.getName() ?? 'Unknown Book';
+  
+  if (!bookId) {
+    return { result: false };
+  }
+
+  const bookAnchor = buildBookAnchor(bookId, bookName);
   
   return {
     result: `${bookAnchor}: CHECKED ${transaction.date} ${transaction.amount}`,

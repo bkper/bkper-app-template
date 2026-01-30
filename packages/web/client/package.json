@@ -9,7 +9,7 @@
   "dependencies": {
     "@bkper/web-auth": "latest",
     "@bkper/web-design": "latest",
-    "lit": "^3"
+    "lit": "^3.3.2"
   },
   "devDependencies": {
     "typescript": "^5",

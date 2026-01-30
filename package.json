@@ -9,7 +9,9 @@
     ],
     "scripts": {
         "clean": "bun run --filter \"./packages/**\" clean && rm -rf node_modules dist",
+        "predev": "bun install",
         "dev": "node ../bkper-cli/lib/cli.js app dev",
+        "prebuild": "bun install",
         "build": "node ../bkper-cli/lib/cli.js app build",
         "deploy": "node ../bkper-cli/lib/cli.js app deploy",
         "deploy:dev": "node ../bkper-cli/lib/cli.js app deploy --dev"

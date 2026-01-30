@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "my-bkper-app",
@@ -13,6 +14,7 @@
         "hono": "^4",
       },
       "devDependencies": {
+        "@bkper/bkper-api-types": "latest",
         "@cloudflare/workers-types": "^4",
         "typescript": "^5",
       },
@@ -30,7 +32,7 @@
       "dependencies": {
         "@bkper/web-auth": "latest",
         "@bkper/web-design": "latest",
-        "lit": "^3",
+        "lit": "^3.3.2",
       },
       "devDependencies": {
         "typescript": "^5",
@@ -50,7 +52,7 @@
     },
   },
   "packages": {
-    "@bkper/bkper-api-types": ["@bkper/bkper-api-types@5.34.0", "", {}, "sha512-CCXMmLPdQC547I9CgHW7q7JNNosTuPB1jpeWfO2/kw5LhhxtLO3/GrOaTgq0zWrzEGHCIWJsXKZvEOj0BF45Wg=="],
+    "@bkper/bkper-api-types": ["@bkper/bkper-api-types@5.35.0", "", {}, "sha512-mj9bkl01IN5Wb7nx2e/m1L8tGw6j27pCiLYPynp8qG0K9oVR2RlWRb2wCPVpRyuc82b5nrDEKK74kRsVH4f42Q=="],
 
     "@bkper/web-auth": ["@bkper/web-auth@1.0.1", "", {}, "sha512-H/udNl0G9alfKUPLfZTzc2Jo3ZUNxWJ5+1d4znb6YkUdYf+lFWNa0OlTPlRORDXXudVh/FbuuiGODzlJIPMFLg=="],
 
@@ -178,7 +180,7 @@
 
     "big.js": ["big.js@6.2.2", "", {}, "sha512-y/ie+Faknx7sZA5MfGA2xKlu0GDv8RWrXGsmlteyJQ2lvoKv9GBK/fpRMc2qlSoBAgNxrixICFCBefIq8WCQpQ=="],
 
-    "bkper-js": ["bkper-js@2.26.1", "", { "dependencies": { "@bkper/bkper-api-types": "^5.34.0", "big.js": "^6.0.3", "dayjs": "^1.10.3", "luxon": "^1.25.0", "uuid": "^11.0.3" } }, "sha512-aJjs+VTA2Sp70B5m++IWLgK7PpAuHiscnP8guQ/GPVgg0XVHBj9vqEdMH0OUorULLUU7criEKdbhtG1NGXQbZA=="],
+    "bkper-js": ["bkper-js@2.27.0", "", { "dependencies": { "@bkper/bkper-api-types": "^5.35.0", "big.js": "^6.0.3", "dayjs": "^1.10.3", "luxon": "^1.25.0", "uuid": "^11.0.3" } }, "sha512-dIAwSLTqSEMwywcPjcnRQCL3RrJGgNCoeu5bguHWoGnV7ytHFNFU48R9FA2NCVlShfOuPVDtAtdwahIeSSB4Bg=="],
 
     "dayjs": ["dayjs@1.11.19", "", {}, "sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw=="],
 
