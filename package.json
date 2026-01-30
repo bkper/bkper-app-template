@@ -1,17 +1,17 @@
 {
-  "name": "my-bkper-app",
-  "private": true,
-  "workspaces": [
-    "packages/shared",
-    "packages/web/client",
-    "packages/web/server",
-    "packages/events"
-  ],
-  "scripts": {
-    "dev": "node /workspace/bkper-cli/lib/cli.js app dev",
-    "build": "node /workspace/bkper-cli/lib/cli.js app build",
-    "clean": "bun run --filter \"./packages/**\" clean && rm -rf node_modules dist",
-    "deploy": "bkper app deploy",
-    "deploy:dev": "bkper app deploy --dev"
-  }
+    "name": "my-bkper-app",
+    "private": true,
+    "workspaces": [
+        "packages/shared",
+        "packages/web/client",
+        "packages/web/server",
+        "packages/events"
+    ],
+    "scripts": {
+        "clean": "bun run --filter \"./packages/**\" clean && rm -rf node_modules dist",
+        "dev": "node ../bkper-cli/lib/cli.js app dev",
+        "build": "node ../bkper-cli/lib/cli.js app build",
+        "deploy": "node ../bkper-cli/lib/cli.js app deploy",
+        "deploy:dev": "node ../bkper-cli/lib/cli.js app deploy --dev"
+    }
 }
