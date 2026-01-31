@@ -11,10 +11,9 @@ app.use(prettyJSON());
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
-// Root route is now served by Cloudflare Workers static assets (index.html)
-// The server only handles API routes
-// If you need server-side rendering, you can add logic here to detect
-// API requests (Content-Type: application/json) vs browser requests
+// === API routes ===
+// Add your API routes here under /api/*
+// Example: app.get('/api/data', (c) => c.json({ data: 'example' }));
 
 // === Test endpoints for CLI integration tests ===
 

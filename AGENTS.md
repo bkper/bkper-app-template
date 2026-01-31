@@ -53,12 +53,20 @@ This builds all configured handlers:
 
 ### Deploying
 
+Sync and deploy are separate operations:
+
 ```bash
-# Deploy to production
+# Sync app metadata (listing, urls, etc.)
+bkper app sync
+
+# Deploy code to Bkper Platform
 bkper app deploy
 
-# Deploy to development
+# Deploy to development environment
 bkper app deploy --dev
+
+# Typical workflow: sync URLs, then deploy code
+bkper app sync && bkper app deploy
 ```
 
 ### Configuration

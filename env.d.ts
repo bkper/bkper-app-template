@@ -6,6 +6,9 @@ export interface Env {
   // Services
   KV: KVNamespace;
 
+  // Static assets binding
+  ASSETS: { fetch: typeof fetch };
+
   // Secrets
   BKPER_API_KEY: string;
 }
