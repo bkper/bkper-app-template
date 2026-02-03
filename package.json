@@ -15,5 +15,8 @@
         "build": "node ../bkper-cli/lib/cli.js app build",
         "deploy": "node ../bkper-cli/lib/cli.js app deploy",
         "deploy:dev": "node ../bkper-cli/lib/cli.js app deploy --dev"
+    },
+    "devDependencies": {
+        "prettier": "^3"
     }
 }
