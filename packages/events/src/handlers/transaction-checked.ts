@@ -1,15 +1,11 @@
-import type { Book } from 'bkper-js';
+import { Book, Transaction } from 'bkper-js';
 import type { EventResult } from '@my-app/shared';
-import { buildBookAnchor } from '@my-app/shared';
 
 /**
  * Handles TRANSACTION_CHECKED events.
  *
  * This event fires when a user marks a transaction as reconciled (checked).
- * Common use cases:
- * - Mirror the check to connected books
- * - Trigger downstream processing
- * - Update external systems
+ * This example creates a draft transaction with 20% of the original amount.
  */
 export async function handleTransactionChecked(
     book: Book,
@@ -20,9 +16,9 @@ export async function handleTransactionChecked(
     }
 
     const operation = event.data.object as bkper.TransactionOperation;
-    const transaction = operation.transaction;
+    const transactionPayload = operation.transaction;
 
-    if (!transaction || !transaction.posted) {
+    if (!transactionPayload || !transactionPayload.posted) {
         return { result: false };
     }
 
@@ -32,22 +28,34 @@ export async function handleTransactionChecked(
         return { result: false };
     }
 
-    // Your logic here
-    console.log(`Transaction checked: ${transaction.id}`);
-    console.log(`Date: ${transaction.date}`);
-    console.log(`Amount: ${transaction.amount}`);
-    console.log(`Description: ${transaction.description}`);
+    // Get original transaction details
+    const originalAmount = Number(transactionPayload.amount) || 0;
+    const originalDescription = transactionPayload.description || 'transaction';
+    const originalDate = transactionPayload.date;
+    const creditAccountName = transactionPayload.creditAccount?.name;
+    const debitAccountName = transactionPayload.debitAccount?.name;
 
-    const bookId = book.getId();
-    const bookName = book.getName() ?? 'Unknown Book';
-
-    if (!bookId) {
+    if (!creditAccountName || !debitAccountName || !originalDate) {
         return { result: false };
     }
 
-    const bookAnchor = buildBookAnchor(bookId, bookName);
+    // Calculate 20% amount
+    const newAmount = originalAmount * 0.2;
+
+    // Create draft transaction
+    const draft = new Transaction(book)
+        .setDate(originalDate)
+        .setAmount(newAmount)
+        .setDescription(`20% of ${originalDescription}`)
+        .setCreditAccount(transactionPayload.creditAccount)
+        .setDebitAccount(transactionPayload.debitAccount);
+
+    await draft.create();
+
+    // Format amount for display
+    const formattedAmount = newAmount.toFixed(book.getFractionDigits() ?? 2);
 
     return {
-        result: `${bookAnchor}: CHECKED ${transaction.date} ${transaction.amount}`,
+        result: `Created draft: 20% of ${originalDescription} - ${formattedAmount}`,
     };
 }

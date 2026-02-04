@@ -2,7 +2,11 @@
 
 ## Overview
 
-[Describe your app here]
+A Bkper app that demonstrates the platform's core patterns:
+
+- **Client**: Book picker + accounts list with balances (bkper-js + bkper-auth)
+- **Events**: Creates a 20% draft transaction on TRANSACTION_CHECKED
+- **Server**: Minimal Hono server (add API routes as needed)
 
 ## Tech Stack
 
@@ -35,10 +39,11 @@ bkper app dev
 ```
 
 This single command:
+
 - Starts the Vite dev server for the client (HMR enabled)
 - Starts Miniflare to simulate the Workers runtime
 - Watches server files and hot-reloads on changes
-- Watches events files and auto-deploys to dev environment
+- Runs the events handler locally and exposes it via a Cloudflared tunnel (installed via devDependencies)
 
 ### Building for Deployment
 
@@ -47,6 +52,7 @@ bkper app build
 ```
 
 This builds all configured handlers:
+
 - Web client (Vite) → `dist/web/client/`
 - Web server (esbuild) → `dist/web/server/`
 - Events handler (esbuild) → `dist/events/`
@@ -75,16 +81,16 @@ The `bkper.yaml` file is the single source of truth:
 
 ```yaml
 deployment:
-  web:
-    main: packages/web/server/src/index.ts  # Worker entry point
-    client: packages/web/client              # Vite project root
-  events:
-    main: packages/events/src/index.ts       # Events handler entry point
-  services:
-    - KV                                      # Cloudflare KV enabled
-  secrets:
-    - BKPER_API_KEY                           # User-defined secrets
-  compatibility_date: "2026-01-29"           # Workers runtime version
+    web:
+        main: packages/web/server/src/index.ts # Worker entry point
+        client: packages/web/client # Vite project root
+    events:
+        main: packages/events/src/index.ts # Events handler entry point
+    services:
+        - KV # Cloudflare KV enabled
+    secrets:
+        - BKPER_API_KEY # User-defined secrets
+    compatibility_date: '2026-01-29' # Workers runtime version
 ```
 
 ### Local Secrets
@@ -100,19 +106,19 @@ deployment:
 
 ## Key URLs
 
-| Environment | Web Handler | Events Handler |
-|-------------|-------------|----------------|
-| Development | `http://localhost:8787` | `https://{id}-dev.bkper.app/events` |
-| Production | `https://{id}.bkper.app` | `https://{id}.bkper.app/events` |
+| Environment | Web Handler              | Events Handler                              |
+| ----------- | ------------------------ | ------------------------------------------- |
+| Development | `http://localhost:8787`  | `https://<random>.trycloudflare.com/events` |
+| Production  | `https://{id}.bkper.app` | `https://{id}.bkper.app/events`             |
 
 ## Common Tasks
 
 ### Adding a New Event Handler
 
 1. Add the event type to `bkper.yaml` under `events:`
-2. Update the handler in `packages/events/src/index.ts`
-3. Deploy to dev: `bkper app deploy --dev`
-4. Test by triggering the event in Bkper
+2. Add a case in `packages/events/src/index.ts`
+3. Create handler in `packages/events/src/handlers/`
+4. Trigger the event in Bkper to test
 
 ### Adding a New API Route
 
@@ -143,3 +149,13 @@ await c.env.KV.put('my-key', 'value', { expirationTtl: 3600 });
 ```
 
 See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for more usage patterns.
+
+## Key Files to Modify
+
+| Task              | File                                           |
+| ----------------- | ---------------------------------------------- |
+| Add UI features   | `packages/web/client/src/components/my-app.ts` |
+| Add API endpoints | `packages/web/server/src/index.ts`             |
+| Handle new events | `packages/events/src/index.ts` + `handlers/`   |
+| Share utilities   | `packages/shared/src/`                         |
+| Configure app     | `bkper.yaml`                                   |

@@ -9,7 +9,7 @@ app.use(logger());
 app.use(prettyJSON());
 
 // Health check
-app.get('/health', (c) => c.json({ status: 'ok' }));
+app.get('/health', c => c.json({ status: 'ok' }));
 
 // === API routes ===
 // Add your API routes here under /api/*
@@ -18,10 +18,10 @@ app.get('/health', (c) => c.json({ status: 'ok' }));
 // === Test endpoints for CLI integration tests ===
 
 // Read from KV
-app.get('/test/kv/:key', async (c) => {
-  const key = c.req.param('key');
-  const value = await c.env.KV.get(key);
-  return c.json({ key, value, found: value !== null });
+app.get('/test/kv/:key', async c => {
+    const key = c.req.param('key');
+    const value = await c.env.KV.get(key);
+    return c.json({ key, value, found: value !== null });
 });
 
 export default app;
