@@ -69,7 +69,7 @@ bkper app sync
 bkper app deploy
 
 # Deploy to development environment
-bkper app deploy --dev
+bkper app deploy --preview
 
 # Typical workflow: sync URLs, then deploy code
 bkper app sync && bkper app deploy

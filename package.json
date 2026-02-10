@@ -14,7 +14,7 @@
         "prebuild": "bun install",
         "build": "node ../bkper-cli/lib/cli.js app build",
         "deploy": "node ../bkper-cli/lib/cli.js app deploy",
-        "deploy:dev": "node ../bkper-cli/lib/cli.js app deploy --dev"
+        "deploy:preview": "node ../bkper-cli/lib/cli.js app deploy --preview"
     },
     "devDependencies": {
         "prettier": "^3"
