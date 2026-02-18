@@ -5,15 +5,15 @@ id: my-app
 name: My App
 description: A Bkper app that does something useful
 
-logoUrl: https://example.com/logo.svg
-logoUrlDark: https://example.com/logo-dark.svg
-website: https://example.com
+logoUrl: https://my-app.bkper.app/images/logo-light.svg
+logoUrlDark: https://my-app.bkper.app/images/logo-dark.svg
 
-ownerName: Your Name
-ownerLogoUrl: https://example.com/owner-logo.png
-ownerWebsite: https://yoursite.com
+website: https://bkper.com/apps/bkper-cli
+ownerName: Bkper
+ownerLogoUrl: https://avatars.githubusercontent.com/u/11943086?v=4
+ownerWebsite: https://bkper.com
 
-repoUrl: https://github.com/you/my-app
+repoUrl: https://github.com/bkper/bkper-app-template
 repoPrivate: true
 
 # Developers usernames and/or domain
