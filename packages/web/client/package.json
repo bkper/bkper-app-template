@@ -1,18 +1,17 @@
 {
-  "name": "@my-app/web-client",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "clean": "rm -rf dist node_modules"
-  },
-  "dependencies": {
-    "@bkper/web-auth": "latest",
-    "@bkper/web-design": "latest",
-    "lit": "^3.3.2"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "vite": "^6"
-  }
+    "name": "@my-app/web-client",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "clean": "rm -rf dist node_modules"
+    },
+    "dependencies": {
+        "@bkper/web-auth": "latest",
+        "@bkper/web-design": "latest",
+        "lit": "^3.3.2"
+    },
+    "devDependencies": {
+        "typescript": "^5"
+    }
 }

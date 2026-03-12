@@ -4,16 +4,16 @@
 
 A Bkper app that demonstrates the platform's core patterns:
 
-- **Client**: Book picker + accounts list with balances (bkper-js + bkper-auth)
-- **Events**: Creates a 20% draft transaction on TRANSACTION_CHECKED
-- **Server**: Minimal Hono server (add API routes as needed)
+-   **Client**: Book picker + accounts list with balances (bkper-js + bkper-auth)
+-   **Events**: Creates a 20% draft transaction on TRANSACTION_CHECKED
+-   **Server**: Minimal Hono server (add API routes as needed)
 
 ## Tech Stack
 
-- Cloudflare Workers for Platforms
-- Hono (web framework)
-- Lit + @bkper/web-design (UI)
-- bkper-js (Bkper SDK)
+-   Cloudflare Workers for Platforms
+-   Hono (web framework)
+-   Lit + @bkper/web-design (UI)
+-   bkper-js (Bkper SDK)
 
 ## Structure
 
@@ -34,28 +34,33 @@ packages/
 # Install dependencies
 bun install
 
-# Start development server
-bkper app dev
+# Start development
+npm run dev
 ```
 
-This single command:
+This runs two processes concurrently:
 
-- Starts the Vite dev server for the client (HMR enabled)
-- Starts Miniflare to simulate the Workers runtime
-- Watches server files and hot-reloads on changes
-- Runs the events handler locally and exposes it via a Cloudflared tunnel (installed via devDependencies)
+-   **`vite dev`** — Client dev server with hot module replacement, configured in `vite.config.ts`
+-   **`bkper app dev`** — Miniflare (Workers runtime), esbuild file watching for server/events, and a Cloudflared tunnel for event webhooks
+
+You can also run them independently:
+
+```bash
+npm run dev:client   # Vite client dev server only
+npm run dev:server   # Worker runtime (web handler only)
+npm run dev:events   # Worker runtime (events handler only)
+```
 
 ### Building for Deployment
 
 ```bash
-bkper app build
+npm run build
 ```
 
-This builds all configured handlers:
+This runs two build steps:
 
-- Web client (Vite) → `dist/web/client/`
-- Web server (esbuild) → `dist/web/server/`
-- Events handler (esbuild) → `dist/events/`
+-   Vite client build → `dist/web/client/`
+-   esbuild worker bundles → `dist/web/server/` and `dist/events/`
 
 ### Deploying
 
@@ -71,8 +76,8 @@ bkper app deploy
 # Deploy to development environment
 bkper app deploy --preview
 
-# Typical workflow: sync URLs, then deploy code
-bkper app sync && bkper app deploy
+# Typical workflow: build, sync URLs, then deploy code
+npm run build && bkper app sync && bkper app deploy
 ```
 
 ### Configuration
@@ -101,8 +106,8 @@ deployment:
 
 ### Generated Files
 
-- `env.d.ts` - TypeScript types for the Worker environment (auto-generated, versioned)
-- `.dev.vars.example` - Template for local secrets (versioned)
+-   `env.d.ts` - TypeScript types for the Worker environment (auto-generated, versioned)
+-   `.dev.vars.example` - Template for local secrets (versioned)
 
 ## Key URLs
 
@@ -132,7 +137,7 @@ Put shared code in `packages/shared/src/` and import from `@my-app/shared`.
 ### Adding Secrets
 
 1. Add the secret name to `bkper.yaml` under `deployment.secrets:`
-2. Run `bkper app build` to regenerate `env.d.ts`
+2. Run `npm run build` to regenerate `env.d.ts`
 3. Set the secret value: `bkper app secrets put SECRET_NAME`
 4. For local dev, add to `.dev.vars`
 

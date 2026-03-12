@@ -10,13 +10,19 @@
     "scripts": {
         "clean": "bun run --filter \"./packages/**\" clean && rm -rf node_modules dist",
         "predev": "bun install",
-        "dev": "node ../bkper-cli/lib/cli.js app dev",
+        "dev": "concurrently \"vite dev\" \"bkper app dev\"",
+        "dev:client": "vite dev",
+        "dev:server": "bkper app dev --web",
+        "dev:events": "bkper app dev --events",
         "prebuild": "bun install",
-        "build": "node ../bkper-cli/lib/cli.js app build",
-        "deploy": "node ../bkper-cli/lib/cli.js app deploy",
-        "deploy:preview": "node ../bkper-cli/lib/cli.js app deploy --preview"
+        "build": "vite build && bkper app build",
+        "deploy": "npm run build && bkper app deploy",
+        "deploy:preview": "npm run build && bkper app deploy --preview"
     },
     "devDependencies": {
-        "prettier": "^3"
+        "concurrently": "^9",
+        "miniflare": "^4",
+        "prettier": "^3",
+        "vite": "^7"
     }
 }
