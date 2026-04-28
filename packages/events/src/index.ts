@@ -25,8 +25,8 @@ app.post('/', async c => {
         const event: bkper.Event = await c.req.json();
 
         // Create Bkper client with request credentials
+        // Authentication is via OAuth2 — the user's token arrives in the bkper-oauth-token header.
         const bkper = new Bkper({
-            apiKeyProvider: c.env.BKPER_API_KEY ? async () => c.env.BKPER_API_KEY! : undefined,
             oauthTokenProvider: async () => c.req.header('bkper-oauth-token'),
             agentIdProvider: async () => c.req.header('bkper-agent-id'),
         });

@@ -94,7 +94,7 @@ deployment:
     services:
         - KV # Cloudflare KV enabled
     secrets:
-        - BKPER_API_KEY # User-defined secrets
+        # Add secrets your app needs (e.g. EXTERNAL_SERVICE_TOKEN)
     compatibility_date: '2026-01-29' # Workers runtime version
 ```
 

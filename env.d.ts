@@ -8,9 +8,6 @@ export interface Env {
 
   // Static assets binding
   ASSETS: { fetch: typeof fetch };
-
-  // Secrets
-  BKPER_API_KEY: string;
 }
 
 // KV types (inline, no external dependency)
