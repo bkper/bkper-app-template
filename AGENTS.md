@@ -15,6 +15,22 @@ A Bkper app that demonstrates the platform's core patterns:
 -   Lit + @bkper/web-design (UI)
 -   bkper-js (Bkper SDK)
 
+## Authentication
+
+This app uses pre-configured OAuth. Do not implement custom OAuth flows, redirect handling, or token refresh.
+
+| Context | Pattern | Location |
+| --- | --- | --- |
+| **Web client** | `@bkper/web-auth` → `auth.getAccessToken()` → `bkper-js` | `packages/web/client/src/components/my-app.ts` |
+| **Event handlers** | `bkper-oauth-token` header → `oauthTokenProvider` | `packages/events/src/index.ts` |
+| **Local dev** | Vite auth middleware uses your CLI credentials (`bkper auth login`) | `vite.config.ts` |
+
+Before starting development:
+
+```bash
+bkper auth login   # one-time setup
+```
+
 ## Structure
 
 ```

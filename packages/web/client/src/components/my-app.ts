@@ -106,6 +106,9 @@ export class MyApp extends LitElement {
         }
     `;
 
+    // AUTH PATTERN: @bkper/web-auth handles OAuth automatically on *.bkper.app.
+    // Initialize with auth.init(), get token with auth.getAccessToken().
+    // Do NOT implement custom OAuth. This is the canonical pattern.
     private auth = new BkperAuth({
         baseUrl: isLocalDev ? window.location.origin : undefined,
         onLoginSuccess: () => {
