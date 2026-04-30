@@ -8,6 +8,24 @@ A Bkper app that demonstrates the platform's core patterns:
 -   **Events**: Creates a 20% draft transaction on TRANSACTION_CHECKED
 -   **Server**: Minimal Hono server (add API routes as needed)
 
+## Post-Init Checklist
+
+After running `bkper app init`, the CLI updates your app ID, package name, and URLs automatically. Before you start developing, customize the remaining branding and metadata:
+
+1. **`bkper.yaml` identity**
+   - `description` — What your app does (shown in the app listing)
+   - `ownerName`, `ownerWebsite`, `ownerLogoUrl` — Your name/company
+   - `repoUrl` — Link to your app's source repository
+
+2. **App logo**
+   - Replace `packages/web/client/public/images/logo-light.svg`
+   - Replace `packages/web/client/public/images/logo-dark.svg`
+   - SVG format recommended; used in the app listing and activity stream
+
+3. **`README.md`**
+   - Write for end users, not developers
+   - Explain what the app does, how to use it, and what features are available
+
 ## Tech Stack
 
 -   Cloudflare Workers for Platforms
