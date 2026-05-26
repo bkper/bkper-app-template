@@ -9,6 +9,7 @@
     "dependencies": {
         "@bkper/web-auth": "latest",
         "@bkper/web-design": "latest",
+        "bkper-js": "latest",
         "lit": "^3.3.2"
     },
     "devDependencies": {

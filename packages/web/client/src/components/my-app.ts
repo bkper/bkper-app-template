@@ -2,9 +2,19 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { BkperAuth } from '@bkper/web-auth';
 import { Bkper, Book, User, BalancesContainer } from 'bkper-js';
+import { createBearerAuthHeaders } from '../auth-headers';
 
 const isLocalDev =
     window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+interface BookSummary {
+    id: string;
+    name: string;
+}
+
+interface ServerBooksResponse {
+    books?: BookSummary[];
+}
 
 @customElement('my-app')
 export class MyApp extends LitElement {
@@ -38,6 +48,23 @@ export class MyApp extends LitElement {
             justify-content: space-between;
             align-items: center;
             margin-bottom: var(--bkper-spacing-large);
+        }
+
+        .section {
+            margin-top: var(--bkper-spacing-large);
+        }
+
+        .note {
+            color: var(--bkper-color-neutral);
+            font-size: var(--bkper-font-size-small);
+            margin-top: calc(-1 * var(--bkper-spacing-small));
+            margin-bottom: var(--bkper-spacing-medium);
+        }
+
+        .error {
+            color: var(--bkper-color-danger, #b00020);
+            font-size: var(--bkper-font-size-small);
+            margin-bottom: var(--bkper-spacing-medium);
         }
 
         .list {
@@ -134,6 +161,12 @@ export class MyApp extends LitElement {
     private books: Book[] = [];
 
     @state()
+    private serverBooks: BookSummary[] = [];
+
+    @state()
+    private serverBooksError: string | null = null;
+
+    @state()
     private book: Book | null = null;
 
     @state()
@@ -169,8 +202,10 @@ export class MyApp extends LitElement {
                 // Load specific book and its accounts
                 await this.loadBook(this.bookId);
             } else {
-                // Load all books for picker
+                // Load all books directly from the browser using @bkper/web-auth.
                 this.books = await this.bkper.getBooks();
+                // Load the same kind of data through this app's server API.
+                await this.loadServerBooks();
             }
         } catch (error) {
             console.error('Error loading data:', error);
@@ -189,6 +224,25 @@ export class MyApp extends LitElement {
             this.balanceContainers = report.getBalancesContainers();
         } catch (error) {
             console.error('Error loading book:', error);
+        }
+    }
+
+    private async loadServerBooks() {
+        this.serverBooksError = null;
+
+        try {
+            const response = await fetch('/api/books', {
+                headers: createBearerAuthHeaders(this.auth.getAccessToken()),
+            });
+            if (!response.ok) {
+                throw new Error(`Server API returned ${response.status}`);
+            }
+            const payload: ServerBooksResponse = await response.json();
+            this.serverBooks = payload.books ?? [];
+        } catch (error) {
+            console.error('Error loading books from server API:', error);
+            this.serverBooksError = error instanceof Error ? error.message : String(error);
+            this.serverBooks = [];
         }
     }
 
@@ -245,6 +299,33 @@ export class MyApp extends LitElement {
                               )}
                           </div>
                       `}
+
+                <div class="section">
+                    <h2>Server API example</h2>
+                    <p class="note">
+                        These books are loaded through <code>/api/books</code> with a bearer
+                        token. The platform validates it before the app server calls Bkper with
+                        outbound auth injection.
+                    </p>
+                    ${this.serverBooksError
+                        ? html`<div class="error">${this.serverBooksError}</div>`
+                        : this.serverBooks.length === 0
+                          ? html`<div class="empty">No books returned by server API</div>`
+                          : html`
+                                <div class="list">
+                                    ${this.serverBooks.map(
+                                        book => html`
+                                            <div
+                                                class="list-item"
+                                                @click=${() => this.handleBookClick(book.id)}
+                                            >
+                                                <span class="list-item-name">${book.name}</span>
+                                            </div>
+                                        `
+                                    )}
+                                </div>
+                            `}
+                </div>
             </div>
         `;
     }

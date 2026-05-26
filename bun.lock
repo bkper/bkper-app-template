@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "my-bkper-app",
+      "dependencies": {
+        "bkper-js": "^2.35.2",
+      },
       "devDependencies": {
         "concurrently": "^9",
         "miniflare": "^4",
@@ -38,6 +41,7 @@
       "dependencies": {
         "@bkper/web-auth": "latest",
         "@bkper/web-design": "latest",
+        "bkper-js": "latest",
         "lit": "^3.3.2",
       },
       "devDependencies": {
@@ -48,6 +52,7 @@
       "name": "@my-app/web-server",
       "version": "0.0.1",
       "dependencies": {
+        "bkper-js": "latest",
         "hono": "^4",
       },
       "devDependencies": {
@@ -57,7 +62,7 @@
     },
   },
   "packages": {
-    "@bkper/bkper-api-types": ["@bkper/bkper-api-types@5.35.0", "", {}, "sha512-mj9bkl01IN5Wb7nx2e/m1L8tGw6j27pCiLYPynp8qG0K9oVR2RlWRb2wCPVpRyuc82b5nrDEKK74kRsVH4f42Q=="],
+    "@bkper/bkper-api-types": ["@bkper/bkper-api-types@5.40.2", "", {}, "sha512-bvaP0B7AH0hAbXLWs/KQQwbSH8e6UE2RpAdcKveEPo5679a2Hl34MjslKJUbTUPi2mB8li16kKCPrx86VkGx8w=="],
 
     "@bkper/web-auth": ["@bkper/web-auth@1.0.1", "", {}, "sha512-H/udNl0G9alfKUPLfZTzc2Jo3ZUNxWJ5+1d4znb6YkUdYf+lFWNa0OlTPlRORDXXudVh/FbuuiGODzlJIPMFLg=="],
 
@@ -269,7 +274,7 @@
 
     "big.js": ["big.js@6.2.2", "", {}, "sha512-y/ie+Faknx7sZA5MfGA2xKlu0GDv8RWrXGsmlteyJQ2lvoKv9GBK/fpRMc2qlSoBAgNxrixICFCBefIq8WCQpQ=="],
 
-    "bkper-js": ["bkper-js@2.27.0", "", { "dependencies": { "@bkper/bkper-api-types": "^5.35.0", "big.js": "^6.0.3", "dayjs": "^1.10.3", "luxon": "^1.25.0", "uuid": "^11.0.3" } }, "sha512-dIAwSLTqSEMwywcPjcnRQCL3RrJGgNCoeu5bguHWoGnV7ytHFNFU48R9FA2NCVlShfOuPVDtAtdwahIeSSB4Bg=="],
+    "bkper-js": ["bkper-js@2.35.2", "", { "dependencies": { "@bkper/bkper-api-types": "^5.40.2", "big.js": "^6.0.3", "dayjs": "^1.10.3", "luxon": "^1.25.0", "uuid": "^11.0.3" } }, "sha512-0iyKzS7uCrkTQhnxwek8pGpjcgJWd3uG3/FHriEfUG5yGIWPDhFBmVHBvc97uCs3CzENpfFQqPZiqS4hNLF5yg=="],
 
     "chalk": ["chalk@4.1.2", "", { "dependencies": { "ansi-styles": "^4.1.0", "supports-color": "^7.1.0" } }, "sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA=="],
 

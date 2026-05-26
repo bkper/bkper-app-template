@@ -5,8 +5,8 @@
 A Bkper app that demonstrates the platform's core patterns:
 
 -   **Client**: Book picker + accounts list with balances (bkper-js + bkper-auth)
+-   **Server**: Hono API route that calls Bkper server-side via outbound auth injection
 -   **Events**: Creates a 20% draft transaction on TRANSACTION_CHECKED
--   **Server**: Minimal Hono server (add API routes as needed)
 
 ## Post-Init Checklist
 
@@ -39,9 +39,13 @@ This app uses pre-configured OAuth. Do not implement custom OAuth flows, redirec
 
 | Context | Pattern | Location |
 | --- | --- | --- |
-| **Web client** | `@bkper/web-auth` → `auth.getAccessToken()` → `bkper-js` | `packages/web/client/src/components/my-app.ts` |
+| **Web client direct API** | `@bkper/web-auth` → `auth.getAccessToken()` → `bkper-js` | `packages/web/client/src/components/my-app.ts` |
+| **Server API routes** | `/api/*` request with `Authorization: Bearer <token>` → dispatch validates and strips header → `bkper-js` with no token provider → platform outbound injects auth | `packages/web/server/src/index.ts` |
+| **External callers** | `Authorization: Bearer <token>` to `/api/*` app route → dispatch validates → outbound injects auth | deployed app URL |
 | **Event handlers** | `bkper-oauth-token` header → `oauthTokenProvider` | `packages/events/src/index.ts` |
-| **Local dev** | Vite auth middleware uses your CLI credentials (`bkper auth login`) | `vite.config.ts` |
+| **Local dev** | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`) | `vite.config.ts`, `bkper app dev --web` |
+
+Browser sessions only allow access to app web pages. They do not authorize server API routes or create outbound auth context; use bearer auth on `/api/*` requests.
 
 Before starting development:
 
@@ -162,7 +166,10 @@ deployment:
 ### Adding a New API Route
 
 1. Add the route in `packages/web/server/src/index.ts`
-2. The dev server hot-reloads automatically
+2. Call it from the client with `Authorization: Bearer ${auth.getAccessToken()}`
+3. Use `new Bkper()` for server-side Bkper API calls; outbound auth is injected by the platform in production and by `bkper app dev --web` locally
+4. Do not add `/auth/*` routes, call Vite `/auth/refresh`, or read OAuth tokens in server code
+5. The dev server hot-reloads automatically
 
 ### Sharing Code Between Web and Events
 

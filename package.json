@@ -16,6 +16,7 @@
         "dev:events": "bkper app dev --events",
         "prebuild": "bun install",
         "build": "vite build && bkper app build",
+        "test": "bun test",
         "deploy": "npm run build && bkper app deploy",
         "deploy:preview": "npm run build && bkper app deploy --preview"
     },
@@ -24,5 +25,8 @@
         "miniflare": "^4",
         "prettier": "^3",
         "vite": "^7"
+    },
+    "dependencies": {
+        "bkper-js": "^2.35.2"
     }
 }
