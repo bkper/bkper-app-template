@@ -20,11 +20,12 @@ developers: someuser *@yoursite.com
 users: someuser *@yoursite.com
 
 menuUrl: https://my-app.bkper.app?bookId=${book.id}
-menuUrlDev: http://localhost:8787?bookId=${book.id}
+menuUrlDev: https://my-app-preview.bkper.app?bookId=${book.id}
 menuPopupWidth: 500
 menuPopupHeight: 300
 
 webhookUrl: https://my-app.bkper.app/events
+webhookUrlDev: https://my-app-preview.bkper.app/events
 apiVersion: v5
 events:
     - TRANSACTION_CHECKED

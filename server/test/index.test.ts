@@ -28,6 +28,14 @@ describe('server Worker', () => {
         globalThis.fetch = originalFetch;
     });
 
+    it('returns a lightweight API ping without calling Bkper', async () => {
+        const response = await app.request('/api/ping');
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body).toEqual({ ok: true, source: 'my-app' });
+    });
+
     it('returns books loaded through bkper-js from a server-side API route', async () => {
         const apiRequests: Request[] = [];
         globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -56,6 +64,71 @@ describe('server Worker', () => {
         });
         expect(apiRequests).toHaveLength(1);
         expect(apiRequests[0].url).toStartWith('https://api.bkper.app/v5/books/');
+    });
+
+    it('returns book balances loaded through a server-side API route', async () => {
+        const apiRequests: Request[] = [];
+        globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+            const request = input instanceof Request ? input : new Request(input, init);
+            apiRequests.push(request);
+
+            if (request.url.includes('/v5/books/book-1/balances')) {
+                return new Response(
+                    JSON.stringify({
+                        accountBalances: [
+                            { name: 'Bank', cumulativeBalance: '123.45' },
+                            { name: 'Sales', cumulativeBalance: '-123.45' },
+                        ],
+                    }),
+                    { headers: { 'content-type': 'application/json' } }
+                );
+            }
+
+            return new Response(JSON.stringify({ id: 'book-1', name: 'Main Book', fractionDigits: 2, decimalSeparator: 'DOT' }), {
+                headers: { 'content-type': 'application/json' },
+            });
+        };
+
+        const response = await app.request('/api/books/book-1/balances');
+        const body = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(body).toEqual({
+            book: { id: 'book-1', name: 'Main Book' },
+            balances: [
+                { name: 'Bank', cumulativeBalanceText: '123.45' },
+                { name: 'Sales', cumulativeBalanceText: '-123.45' },
+            ],
+        });
+        expect(apiRequests).toHaveLength(2);
+        expect(apiRequests[0].url).toStartWith('https://api.bkper.app/v5/books/book-1');
+        expect(apiRequests[1].url).toStartWith('https://api.bkper.app/v5/books/book-1/balances');
+    });
+
+    it('returns JSON errors for uncaught server API failures', async () => {
+        globalThis.fetch = async (): Promise<Response> =>
+            new Response(
+                JSON.stringify({
+                    error: {
+                        errors: [
+                            {
+                                domain: 'global',
+                                reason: 'forbidden',
+                                message: 'Login Required.',
+                            },
+                        ],
+                        code: 403,
+                        message: 'Login Required.',
+                    },
+                }),
+                { status: 403, headers: { 'content-type': 'application/json' } }
+            );
+
+        const response = await app.request('/api/books');
+        const body = await response.json();
+
+        expect(response.status).toBe(500);
+        expect(body).toEqual({ error: 'Login Required.' });
     });
 
     it('keeps KV example endpoints under the authenticated API namespace', async () => {

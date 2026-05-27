@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { BkperAuth } from '@bkper/web-auth';
-import { Bkper, Book, User, BalancesContainer } from 'bkper-js';
+import { Bkper, Book, User } from 'bkper-js';
 import { createBearerAuthHeaders } from '../auth-headers';
 
 const isLocalDev =
@@ -14,6 +14,16 @@ interface BookSummary {
 
 interface ServerBooksResponse {
     books?: BookSummary[];
+}
+
+interface ServerBookBalance {
+    name: string;
+    cumulativeBalanceText: string;
+}
+
+interface ServerBookBalancesResponse {
+    book?: BookSummary;
+    balances?: ServerBookBalance[];
 }
 
 @customElement('my-app')
@@ -167,10 +177,13 @@ export class MyApp extends LitElement {
     private serverBooksError: string | null = null;
 
     @state()
-    private book: Book | null = null;
+    private bookName: string | null = null;
 
     @state()
-    private balanceContainers: BalancesContainer[] = [];
+    private selectedBookError: string | null = null;
+
+    @state()
+    private balanceContainers: ServerBookBalance[] = [];
 
     @state()
     private bookId: string | null = null;
@@ -215,15 +228,23 @@ export class MyApp extends LitElement {
     }
 
     private async loadBook(bookId: string) {
-        if (!this.bkper) return;
+        this.selectedBookError = null;
+        this.bookName = null;
+        this.balanceContainers = [];
 
         try {
-            this.book = await this.bkper.getBook(bookId);
-            // Get all accounts with balances using empty query
-            const report = await this.book.getBalancesReport('');
-            this.balanceContainers = report.getBalancesContainers();
+            const response = await fetch(`/api/books/${encodeURIComponent(bookId)}/balances`, {
+                headers: createBearerAuthHeaders(this.auth.getAccessToken()),
+            });
+            if (!response.ok) {
+                throw new Error(`Server API returned ${response.status}`);
+            }
+            const payload: ServerBookBalancesResponse = await response.json();
+            this.bookName = payload.book?.name ?? 'Untitled book';
+            this.balanceContainers = payload.balances ?? [];
         } catch (error) {
-            console.error('Error loading book:', error);
+            console.error('Error loading book from server API:', error);
+            this.selectedBookError = error instanceof Error ? error.message : String(error);
         }
     }
 
@@ -264,8 +285,8 @@ export class MyApp extends LitElement {
             `;
         }
 
-        // Book view: show accounts with balances
-        if (this.bookId && this.book) {
+        // Book view: show accounts with balances, or a visible load error.
+        if (this.bookId) {
             return this.renderBookView();
         }
 
@@ -335,23 +356,35 @@ export class MyApp extends LitElement {
             <div class="container">
                 <a href="?" class="back-link">&larr; Back to books</a>
 
-                <div class="header">
-                    <div>
-                        <h1>${this.book?.getName()}</h1>
-                        <h2>Accounts</h2>
-                    </div>
-                </div>
+                ${this.selectedBookError
+                    ? html`
+                          <div class="header">
+                              <div>
+                                  <h1>Could not load selected book</h1>
+                                  <h2>${this.bookId}</h2>
+                              </div>
+                          </div>
+                          <div class="error">${this.selectedBookError}</div>
+                      `
+                    : html`
+                          <div class="header">
+                              <div>
+                                  <h1>${this.bookName ?? 'Selected book'}</h1>
+                                  <h2>Accounts</h2>
+                              </div>
+                          </div>
+                      `}
 
-                ${this.balanceContainers.length === 0
+                ${!this.selectedBookError && this.balanceContainers.length === 0
                     ? html`<div class="empty">No accounts found</div>`
                     : html`
                           <div class="list">
                               ${this.balanceContainers.map(
                                   container => html`
                                       <div class="list-item no-hover">
-                                          <span class="list-item-name">${container.getName()}</span>
+                                          <span class="list-item-name">${container.name}</span>
                                           <span class="list-item-value">
-                                              ${container.getCumulativeBalanceText()}
+                                              ${container.cumulativeBalanceText}
                                           </span>
                                       </div>
                                   `

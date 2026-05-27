@@ -11,7 +11,14 @@ const app = new Hono<{ Bindings: Env }>();
 app.use(logger());
 app.use(prettyJSON());
 
+app.onError((err, c) => {
+    console.error(err);
+    return c.json({ error: err.message }, 500);
+});
+
 app.get('/health', c => c.json({ status: 'ok' }));
+
+app.get('/api/ping', c => c.json({ ok: true, source: 'my-app' }));
 
 app.get('/api/books', async c => {
     const bkper = new Bkper();
@@ -23,6 +30,24 @@ app.get('/api/books', async c => {
                 name: book.getName() ?? 'Untitled book',
             }))
             .filter((book): book is { id: string; name: string } => Boolean(book.id)),
+    });
+});
+
+app.get('/api/books/:bookId/balances', async c => {
+    const bookId = c.req.param('bookId');
+    const bkper = new Bkper();
+    const book = await bkper.getBook(bookId);
+    const report = await book.getBalancesReport('');
+
+    return c.json({
+        book: {
+            id: book.getId(),
+            name: book.getName() ?? 'Untitled book',
+        },
+        balances: report.getBalancesContainers().map(container => ({
+            name: container.getName(),
+            cumulativeBalanceText: container.getCumulativeBalanceText(),
+        })),
     });
 });
 
