@@ -31,4 +31,4 @@ Thumbs.db
 
 # Environment variables
 .env
-.bun.lock
+bun.lock
