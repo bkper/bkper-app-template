@@ -1,9 +1,0 @@
-{
-    "extends": "../../../tsconfig.json",
-    "compilerOptions": {
-        "outDir": "dist",
-        "rootDir": "src",
-        "types": ["@bkper/bkper-api-types"]
-    },
-    "include": ["src/**/*", "../../../env.d.ts"]
-}

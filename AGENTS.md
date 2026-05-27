@@ -2,206 +2,81 @@
 
 ## Overview
 
-A Bkper app that demonstrates the platform's core patterns:
+A Bkper app using the single Worker platform model:
 
--   **Client**: Book picker + accounts list with balances (bkper-js + bkper-auth)
--   **Server**: Hono API route that calls Bkper server-side via outbound auth injection
--   **Events**: Creates a 20% draft transaction on TRANSACTION_CHECKED
+- **Client**: Book picker + accounts list with balances (`bkper-js` + `@bkper/web-auth`)
+- **Server**: Hono Worker serving `/api/*` routes and `/events`
+- **Events**: Creates a 20% draft transaction on `TRANSACTION_CHECKED`
 
 ## Post-Init Checklist
 
-After running `bkper app init`, the CLI updates your app ID, package name, and URLs automatically. Before you start developing, customize the remaining branding and metadata:
+After running `bkper app init`, customize:
 
-1. **`bkper.yaml` identity**
-   - `description` — What your app does (shown in the app listing)
-   - `ownerName`, `ownerWebsite`, `ownerLogoUrl` — Your name/company
-   - `repoUrl` — Link to your app's source repository
-
-2. **App logo**
-   - Replace `packages/web/client/public/images/logo-light.svg`
-   - Replace `packages/web/client/public/images/logo-dark.svg`
-   - SVG format recommended; used in the app listing and activity stream
-
-3. **`README.md`**
-   - Write for end users, not developers
-   - Explain what the app does, how to use it, and what features are available
-
-## Tech Stack
-
--   Cloudflare Workers for Platforms
--   Hono (web framework)
--   Lit + @bkper/web-design (UI)
--   bkper-js (Bkper SDK)
+1. `bkper.yaml` identity and ownership fields
+2. Logos in `client/public/images/`
+3. `README.md` for end users
 
 ## Authentication
 
-This app uses pre-configured OAuth. Do not implement custom OAuth flows, redirect handling, or token refresh.
+Do not implement custom OAuth flows, redirect handling, or token refresh.
 
 | Context | Pattern | Location |
 | --- | --- | --- |
-| **Web client direct API** | `@bkper/web-auth` → `auth.getAccessToken()` → `bkper-js` | `packages/web/client/src/components/my-app.ts` |
-| **Server API routes** | `/api/*` request with `Authorization: Bearer <token>` → dispatch validates and strips header → `bkper-js` with no token provider → platform outbound injects auth | `packages/web/server/src/index.ts` |
-| **External callers** | `Authorization: Bearer <token>` to `/api/*` app route → dispatch validates → outbound injects auth | deployed app URL |
-| **Event handlers** | `bkper-oauth-token` header → `oauthTokenProvider` | `packages/events/src/index.ts` |
-| **Local dev** | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`) | `vite.config.ts`, `bkper app dev --web` |
-
-Browser sessions only allow access to app web pages. They do not authorize server API routes or create outbound auth context; use bearer auth on `/api/*` requests.
-
-Before starting development:
-
-```bash
-bkper auth login   # one-time setup
-```
+| Web client direct API | `@bkper/web-auth` → `auth.getAccessToken()` → `bkper-js` | `client/src/components/my-app.ts` |
+| Server API routes | Browser sends `Authorization: Bearer <token>` to `/api/*`; platform injects auth for server-side `new Bkper()` calls | `server/src/index.ts` |
+| Event handlers | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection | `server/src/index.ts` |
+| Local dev | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`) | `vite.config.ts`, `bkper app dev` |
 
 ## Structure
 
 ```
-packages/
-├── shared/     — Shared types and utilities
-├── web/
-│   ├── client/ — Frontend UI (Vite + Lit)
-│   └── server/ — Backend API (Hono)
-└── events/     — Event handler (webhooks)
+client/  — Frontend UI (Vite + Lit)
+server/  — Hono Worker for /api/* and /events
 ```
 
-## Development Workflow
-
-### Starting Development
+## Development
 
 ```bash
-# Install dependencies
+bkper auth login
 bun install
-
-# Start development
 npm run dev
 ```
 
-This runs two processes concurrently:
+This runs:
 
--   **`vite dev`** — Client dev server with hot module replacement, configured in `vite.config.ts`
--   **`bkper app dev`** — Miniflare (Workers runtime), esbuild file watching for server/events, and a Cloudflared tunnel for event webhooks
+- `vite dev` — client dev server with HMR
+- `bkper app dev` — one Miniflare Worker and an event tunnel to the same Worker when events are configured
 
-You can also run them independently:
-
-```bash
-npm run dev:client   # Vite client dev server only
-npm run dev:server   # Worker runtime (web handler only)
-npm run dev:events   # Worker runtime (events handler only)
-```
-
-### Building for Deployment
+## Build and deploy
 
 ```bash
 npm run build
-```
-
-This runs two build steps:
-
--   Vite client build → `dist/web/client/`
--   esbuild worker bundles → `dist/web/server/` and `dist/events/`
-
-### Deploying
-
-Sync and deploy are separate operations:
-
-```bash
-# Sync app metadata (listing, urls, etc.)
 bkper app sync
-
-# Deploy code to Bkper Platform
 bkper app deploy
-
-# Deploy to development environment
-bkper app deploy --preview
-
-# Typical workflow: build, sync URLs, then deploy code
-npm run build && bkper app sync && bkper app deploy
 ```
 
-### Configuration
+Build output:
 
-The `bkper.yaml` file is the single source of truth:
+- Vite client build → `dist/client/`
+- Worker bundle → `dist/server/`
+
+## Configuration
 
 ```yaml
 deployment:
-    web:
-        main: packages/web/server/src/index.ts # Worker entry point
-        client: packages/web/client # Vite project root
-    events:
-        main: packages/events/src/index.ts # Events handler entry point
+    server: server/src/index.ts
+    client: client
     services:
-        - KV # Cloudflare KV enabled
-    secrets:
-        # Add secrets your app needs (e.g. EXTERNAL_SERVICE_TOKEN)
-    compatibility_date: '2026-01-29' # Workers runtime version
+        - KV
+    secrets: []
+    compatibility_date: '2026-01-28'
 ```
 
-### Local Secrets
+## Key files
 
-1. Copy `.dev.vars.example` to `.dev.vars`
-2. Add your local development values
-3. `.dev.vars` is gitignored
-
-### Generated Files
-
--   `env.d.ts` - TypeScript types for the Worker environment (auto-generated, versioned)
--   `.dev.vars.example` - Template for local secrets (versioned)
-
-## Key URLs
-
-| Environment | Web Handler              | Events Handler                              |
-| ----------- | ------------------------ | ------------------------------------------- |
-| Development | `http://localhost:8787`  | `https://<random>.trycloudflare.com/events` |
-| Production  | `https://{id}.bkper.app` | `https://{id}.bkper.app/events`             |
-
-## Common Tasks
-
-### Adding a New Event Handler
-
-1. Add the event type to `bkper.yaml` under `events:`
-2. Add a case in `packages/events/src/index.ts`
-3. Create handler in `packages/events/src/handlers/`
-4. Trigger the event in Bkper to test
-
-### Adding a New API Route
-
-1. Add the route in `packages/web/server/src/index.ts`
-2. Call it from the client with `Authorization: Bearer ${auth.getAccessToken()}`
-3. Use `new Bkper()` for server-side Bkper API calls; outbound auth is injected by the platform in production and by `bkper app dev --web` locally
-4. Do not add `/auth/*` routes, call Vite `/auth/refresh`, or read OAuth tokens in server code
-5. The dev server hot-reloads automatically
-
-### Sharing Code Between Web and Events
-
-Put shared code in `packages/shared/src/` and import from `@my-app/shared`.
-
-### Adding Secrets
-
-1. Add the secret name to `bkper.yaml` under `deployment.secrets:`
-2. Run `npm run build` to regenerate `env.d.ts`
-3. Set the secret value: `bkper app secrets put SECRET_NAME`
-4. For local dev, add to `.dev.vars`
-
-### KV Storage
-
-Cloudflare KV is available for caching and state. Access via the `KV` binding.
-
-```typescript
-// Read
-const value = await c.env.KV.get('my-key');
-
-// Write with TTL
-await c.env.KV.put('my-key', 'value', { expirationTtl: 3600 });
-```
-
-See [Cloudflare KV documentation](https://developers.cloudflare.com/kv/) for more usage patterns.
-
-## Key Files to Modify
-
-| Task              | File                                           |
-| ----------------- | ---------------------------------------------- |
-| Add UI features   | `packages/web/client/src/components/my-app.ts` |
-| Add API endpoints | `packages/web/server/src/index.ts`             |
-| Handle new events | `packages/events/src/index.ts` + `handlers/`   |
-| Share utilities   | `packages/shared/src/`                         |
-| Configure app     | `bkper.yaml`                                   |
+| Task | File |
+| --- | --- |
+| Add UI features | `client/src/components/my-app.ts` |
+| Add API endpoints | `server/src/index.ts` |
+| Handle events | `server/src/index.ts` and `server/src/handlers/` |
+| Configure app | `bkper.yaml` |

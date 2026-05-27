@@ -2,9 +2,9 @@ import { defineConfig } from 'vite';
 import { createBkperAuthMiddleware } from 'bkper/dev';
 
 export default defineConfig({
-    root: 'packages/web/client',
+    root: 'client',
     build: {
-        outDir: '../../../dist/web/client',
+        outDir: '../dist/client',
         emptyOutDir: true,
     },
     plugins: [
@@ -17,5 +17,10 @@ export default defineConfig({
     ],
     server: {
         proxy: { '/api': 'http://localhost:8787' },
+        hmr: {
+            host: 'localhost',
+            port: 5173,
+            clientPort: 5173,
+        },
     },
 });

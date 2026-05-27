@@ -6,10 +6,14 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "types": ["@bkper/bkper-api-types"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": "src"
-  }
+    "outDir": "dist"
+  },
+  "include": ["client/src/**/*.ts", "server/src/**/*.ts", "env.d.ts"]
 }
+

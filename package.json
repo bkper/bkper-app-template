@@ -1,32 +1,33 @@
 {
     "name": "my-bkper-app",
     "private": true,
-    "workspaces": [
-        "packages/shared",
-        "packages/web/client",
-        "packages/web/server",
-        "packages/events"
-    ],
     "scripts": {
-        "clean": "bun run --filter \"./packages/**\" clean && rm -rf node_modules dist",
+        "clean": "rm -rf node_modules dist",
         "predev": "bun install",
         "dev": "concurrently \"vite dev\" \"bkper app dev\"",
         "dev:client": "vite dev",
-        "dev:server": "bkper app dev --web",
-        "dev:events": "bkper app dev --events",
+        "dev:server": "bkper app dev",
         "prebuild": "bun install",
         "build": "vite build && bkper app build",
         "test": "bun test",
-        "deploy": "npm run build && bkper app deploy",
-        "deploy:preview": "npm run build && bkper app deploy --preview"
+        "typecheck": "tsc --noEmit",
+        "deploy": "npm run build && bkper app sync && bkper app deploy",
+        "deploy:preview": "npm run build && bkper app sync && bkper app deploy --preview"
     },
     "devDependencies": {
+        "@bkper/bkper-api-types": "latest",
+        "bkper": "latest",
         "concurrently": "^9",
         "miniflare": "^4",
         "prettier": "^3",
+        "typescript": "^5",
         "vite": "^7"
     },
     "dependencies": {
-        "bkper-js": "^2.35.2"
+        "@bkper/web-auth": "latest",
+        "@bkper/web-design": "latest",
+        "bkper-js": "latest",
+        "hono": "^4",
+        "lit": "^3.3.2"
     }
 }

@@ -16,31 +16,23 @@ ownerWebsite: https://bkper.com
 repoUrl: https://github.com/bkper/bkper-app-template
 repoPrivate: true
 
-# Developers usernames and/or domain
 developers: someuser *@yoursite.com
-
-# Users usernames and/or domain
 users: someuser *@yoursite.com
 
-# Menu integration (optional - remove if not needed)
 menuUrl: https://my-app.bkper.app?bookId=${book.id}
 menuUrlDev: http://localhost:8787?bookId=${book.id}
 menuPopupWidth: 500
 menuPopupHeight: 300
 
-# Event handling (optional - remove if not needed)
 webhookUrl: https://my-app.bkper.app/events
 apiVersion: v5
 events:
     - TRANSACTION_CHECKED
 
-# Deployment configuration
 deployment:
-    web:
-        main: packages/web/server/src/index.ts
-        client: packages/web/client
-    events:
-        main: packages/events/src/index.ts
+    server: server/src/index.ts
+    client: client
     services:
         - KV
+    secrets: []
     compatibility_date: '2026-01-28'
