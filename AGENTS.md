@@ -66,7 +66,7 @@ Keep route handlers thin. Put API shape and validation in `api/`, event transpor
 ```bash
 bkper auth login
 bun install
-npm run dev
+bun run dev
 ```
 
 This runs:
@@ -77,9 +77,8 @@ This runs:
 ## Build and deploy
 
 ```bash
-npm run build
-bkper app sync
-bkper app deploy
+bun run preview # preview deployment
+bun run deploy  # production deployment
 ```
 
 Build output:
@@ -112,6 +111,6 @@ deployment:
 | Add API schemas            | `server/src/api/schemas.ts`                                     |
 | Add API endpoints          | `server/src/api/routes.ts`                                      |
 | Add server behavior        | `server/src/services/`                                          |
-| Regenerate API types       | `npm run api`                                                   |
+| Regenerate API types       | `bun run api`                                                   |
 | Handle events              | `server/src/events/routes.ts` and `server/src/events/handlers/` |
 | Configure app              | `bkper.yaml`                                                    |

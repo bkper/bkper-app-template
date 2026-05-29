@@ -8,12 +8,12 @@
         "dev:client": "vite dev",
         "dev:server": "bkper app dev",
         "prebuild": "bun install",
-        "build": "npm run api && vite build && bkper app build",
+        "build": "bun run api && vite build && bkper app build",
         "test": "bun test",
         "typecheck": "tsc --noEmit",
         "api": "bun scripts/generate-api-types.ts",
-        "deploy": "npm run build && bkper app sync && bkper app deploy",
-        "deploy:preview": "npm run build && bkper app sync && bkper app deploy --preview"
+        "deploy": "bun run build && bkper app sync && bkper app deploy",
+        "deploy:preview": "bun run build && bkper app sync && bkper app deploy --preview"
     },
     "devDependencies": {
         "@bkper/bkper-api-types": "latest",
