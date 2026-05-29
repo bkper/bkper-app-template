@@ -23,8 +23,8 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 | Context               | Pattern                                                                                                              | Location                          |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
 | Web client direct API | `@bkper/web-auth` → `auth.getAccessToken()` → `bkper-js`                                                             | `client/src/components/my-app.ts` |
-| Server API routes     | Browser sends `Authorization: Bearer <token>` to `/api/*`; platform injects auth for server-side `new Bkper()` calls | `server/src/index.ts`             |
-| Event handlers        | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection                                   | `server/src/index.ts`             |
+| Server API routes     | Browser sends `Authorization: Bearer <token>` to `/api/*`; platform injects auth for server-side `new Bkper()` calls | `server/src/api/routes.ts`        |
+| Event handlers        | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection                                   | `server/src/events/routes.ts`     |
 | Local dev             | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`)                               | `vite.config.ts`, `bkper app dev` |
 
 ## Structure
@@ -33,6 +33,18 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 client/  — Frontend UI (Vite + Lit)
 server/  — Hono Worker for /api/* and /events
 ```
+
+Server code is layered so template users can see where each concern belongs:
+
+```
+server/src/
+├── index.ts      — Worker composition, middleware, health, static assets
+├── api/          — HTTP API routes, OpenAPI schemas, API error responses
+├── events/       — Bkper event ingress, dispatch, and event adapters
+└── services/     — App behavior and Bkper SDK orchestration
+```
+
+Keep route handlers thin. Put API shape and validation in `api/`, event transport concerns in `events/`, and business behavior in `services/`.
 
 ## Development
 
@@ -75,12 +87,13 @@ deployment:
 
 ## Key files
 
-| Task                       | File                                             |
-| -------------------------- | ------------------------------------------------ |
-| Add UI features            | `client/src/components/my-app.ts`                |
-| Add typed client API calls | `client/src/api/app-api.ts`                      |
-| Add API schemas            | `server/src/api/schemas.ts`                      |
-| Add API endpoints          | `server/src/index.ts`                            |
-| Regenerate API types       | `npm run api`                                    |
-| Handle events              | `server/src/index.ts` and `server/src/handlers/` |
-| Configure app              | `bkper.yaml`                                     |
+| Task                       | File                                                            |
+| -------------------------- | --------------------------------------------------------------- |
+| Add UI features            | `client/src/components/my-app.ts`                               |
+| Add typed client API calls | `client/src/api/app-api.ts`                                     |
+| Add API schemas            | `server/src/api/schemas.ts`                                     |
+| Add API endpoints          | `server/src/api/routes.ts`                                      |
+| Add server behavior        | `server/src/services/`                                          |
+| Regenerate API types       | `npm run api`                                                   |
+| Handle events              | `server/src/events/routes.ts` and `server/src/events/handlers/` |
+| Configure app              | `bkper.yaml`                                                    |
