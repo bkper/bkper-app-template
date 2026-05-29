@@ -213,13 +213,12 @@ export interface components {
             /** @enum {boolean} */
             success: false;
             error: {
-                code: components["schemas"]["ApiErrorCode"];
+                /** @example INTERNAL_ERROR */
+                code: string;
                 /** @example An unexpected error occurred */
                 message: string;
             };
         };
-        /** @example INTERNAL_ERROR */
-        ApiErrorCode: string;
         BookBalancesResponse: {
             book: components["schemas"]["BookSummary"];
             balances: components["schemas"]["BalanceContainer"][];
@@ -237,5 +236,11 @@ export interface components {
     headers: never;
     pathItems: never;
 }
+export type PingResponse = components['schemas']['PingResponse'];
+export type BooksResponse = components['schemas']['BooksResponse'];
+export type BookSummary = components['schemas']['BookSummary'];
+export type ErrorResponse = components['schemas']['ErrorResponse'];
+export type BookBalancesResponse = components['schemas']['BookBalancesResponse'];
+export type BalanceContainer = components['schemas']['BalanceContainer'];
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

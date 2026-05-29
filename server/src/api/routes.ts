@@ -6,6 +6,7 @@ import {
     BookBalancesResponseSchema,
     BookIdParamSchema,
     BooksResponseSchema,
+    jsonResponse,
     PingResponseSchema,
 } from './schemas.js';
 import { buildApiError } from './errors.js';
@@ -20,10 +21,7 @@ const pingRoute = createRoute({
     tags: ['API'],
     summary: 'Ping app API',
     responses: {
-        200: {
-            description: 'API is reachable',
-            content: { 'application/json': { schema: PingResponseSchema } },
-        },
+        200: jsonResponse('API is reachable', PingResponseSchema),
     },
 });
 
@@ -34,10 +32,7 @@ const booksRoute = createRoute({
     summary: 'List accessible books',
     description: 'Returns the books visible to the authenticated user.',
     responses: {
-        200: {
-            description: 'Accessible books',
-            content: { 'application/json': { schema: BooksResponseSchema } },
-        },
+        200: jsonResponse('Accessible books', BooksResponseSchema),
         ...apiErrorResponses,
     },
 });
@@ -51,10 +46,7 @@ const bookBalancesRoute = createRoute({
         params: BookIdParamSchema,
     },
     responses: {
-        200: {
-            description: 'Book account balances',
-            content: { 'application/json': { schema: BookBalancesResponseSchema } },
-        },
+        200: jsonResponse('Book account balances', BookBalancesResponseSchema),
         ...apiErrorResponses,
     },
 });

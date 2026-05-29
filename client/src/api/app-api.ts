@@ -1,13 +1,16 @@
 import createClient from 'openapi-fetch';
 import { createBearerAuthHeaders } from './auth-headers';
-import type { components, paths } from './generated/types';
+import type {
+    BalanceContainer,
+    BookBalancesResponse,
+    BookSummary,
+    ErrorResponse,
+    paths,
+    PingResponse,
+} from './generated/types';
 
-export type BookSummary = components['schemas']['BookSummary'];
-export type BalanceContainer = components['schemas']['BalanceContainer'];
-export type BookBalancesResponse = components['schemas']['BookBalancesResponse'];
-export type PingResponse = components['schemas']['PingResponse'];
-export type ApiErrorCode = components['schemas']['ApiErrorCode'];
-export type ApiErrorResponse = components['schemas']['ErrorResponse'];
+export type { BalanceContainer, BookBalancesResponse, BookSummary, PingResponse };
+export type ApiErrorResponse = ErrorResponse;
 
 export interface AppApiOptions {
     getAccessToken: () => string | undefined;
@@ -19,7 +22,7 @@ export class AppApiError extends Error {
     constructor(
         message: string,
         readonly status: number,
-        readonly code?: ApiErrorCode
+        readonly code?: string
     ) {
         super(message);
         this.name = 'AppApiError';

@@ -1,12 +1,22 @@
 import { z } from '@hono/zod-openapi';
+import type { ZodType } from 'zod';
 
-export const ApiErrorCodeSchema = z.string().min(1).openapi('ApiErrorCode');
+const JSON_CONTENT_TYPE = 'application/json';
+
+export function jsonResponse<TSchema extends ZodType>(description: string, schema: TSchema) {
+    return {
+        description,
+        content: {
+            [JSON_CONTENT_TYPE]: { schema },
+        },
+    };
+}
 
 export const ErrorResponseSchema = z
     .object({
         success: z.literal(false),
         error: z.object({
-            code: ApiErrorCodeSchema.openapi({ example: 'INTERNAL_ERROR' }),
+            code: z.string().min(1).openapi({ example: 'INTERNAL_ERROR' }),
             message: z.string().openapi({ example: 'An unexpected error occurred' }),
         }),
     })
@@ -58,20 +68,8 @@ export const BookIdParamSchema = z.object({
 });
 
 export const apiErrorResponses = {
-    400: {
-        description: 'Invalid request',
-        content: { 'application/json': { schema: ErrorResponseSchema } },
-    },
-    401: {
-        description: 'Authentication failed',
-        content: { 'application/json': { schema: ErrorResponseSchema } },
-    },
-    403: {
-        description: 'Permission denied',
-        content: { 'application/json': { schema: ErrorResponseSchema } },
-    },
-    500: {
-        description: 'Unexpected API error',
-        content: { 'application/json': { schema: ErrorResponseSchema } },
-    },
+    400: jsonResponse('Invalid request', ErrorResponseSchema),
+    401: jsonResponse('Authentication failed', ErrorResponseSchema),
+    403: jsonResponse('Permission denied', ErrorResponseSchema),
+    500: jsonResponse('Unexpected API error', ErrorResponseSchema),
 };

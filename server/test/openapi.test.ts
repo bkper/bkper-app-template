@@ -19,7 +19,18 @@ describe('server OpenAPI contract', () => {
         expect(spec.paths['/events']).toBeUndefined();
         expect(spec.paths['/health']).toBeUndefined();
         expect(spec.paths['/api/test/kv/{key}']).toBeUndefined();
-        expect(spec.components?.schemas?.ErrorResponse).toBeDefined();
+        const schemas = spec.components?.schemas ?? {};
+        expect(schemas.ErrorResponse).toBeDefined();
+        expect(schemas.ApiErrorCode).toBeUndefined();
+        expect(schemas.ErrorResponse).toMatchObject({
+            properties: {
+                error: {
+                    properties: {
+                        code: { type: 'string' },
+                    },
+                },
+            },
+        });
     });
 
     it('returns a standardized API not found error', async () => {
