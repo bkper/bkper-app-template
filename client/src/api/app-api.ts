@@ -1,5 +1,5 @@
 import createClient from 'openapi-fetch';
-import { createBearerAuthHeaders } from '../auth-headers';
+import { createBearerAuthHeaders } from './auth-headers';
 import type { components, paths } from './generated/types';
 
 export type BookSummary = components['schemas']['BookSummary'];

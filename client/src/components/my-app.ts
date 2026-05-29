@@ -1,11 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import { BkperAuth } from '@bkper/web-auth';
-import { Bkper, Book, User } from 'bkper-js';
-import { createAppApi, type AppApi, type BalanceContainer, type BookSummary } from '../api/app-api';
-
-const isLocalDev =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+import { customElement } from 'lit/decorators.js';
+import { AppController } from '../app/app-controller';
+import type { AppState } from '../app/app-state';
 
 @customElement('my-app')
 export class MyApp extends LitElement {
@@ -124,139 +120,12 @@ export class MyApp extends LitElement {
         }
     `;
 
-    // AUTH PATTERN: @bkper/web-auth handles OAuth automatically on *.bkper.app.
-    // Initialize with auth.init(), get token with auth.getAccessToken().
-    // Do NOT implement custom OAuth. This is the canonical pattern.
-    private auth = new BkperAuth({
-        baseUrl: isLocalDev ? window.location.origin : undefined,
-        onLoginSuccess: () => {
-            this.loadData();
-        },
-        onLoginRequired: () => {
-            this.auth.login();
-        },
-        onError: error => {
-            console.error('Auth error:', error);
-        },
-    });
-
-    private bkper: Bkper | null = null;
-    private appApi: AppApi | null = null;
-
-    @state()
-    private loading = true;
-
-    @state()
-    private user: User | null = null;
-
-    @state()
-    private books: Book[] = [];
-
-    @state()
-    private serverBooks: BookSummary[] = [];
-
-    @state()
-    private serverBooksError: string | null = null;
-
-    @state()
-    private bookName: string | null = null;
-
-    @state()
-    private selectedBookError: string | null = null;
-
-    @state()
-    private balanceContainers: BalanceContainer[] = [];
-
-    @state()
-    private bookId: string | null = null;
-
-    async connectedCallback() {
-        super.connectedCallback();
-
-        // Get bookId from URL
-        const params = new URLSearchParams(window.location.search);
-        this.bookId = params.get('bookId');
-
-        // Initialize auth - will trigger onLoginSuccess or onLoginRequired
-        await this.auth.init();
-    }
-
-    private async loadData() {
-        // Initialize bkper-js with auth token
-        this.bkper = new Bkper({
-            oauthTokenProvider: async () => this.auth.getAccessToken(),
-        });
-        this.appApi = createAppApi({
-            getAccessToken: () => this.auth.getAccessToken(),
-        });
-
-        this.loading = true;
-
-        try {
-            // Always fetch user info
-            this.user = await this.bkper.getUser();
-
-            if (this.bookId) {
-                // Load specific book and its accounts
-                await this.loadBook(this.bookId);
-            } else {
-                // Load all books directly from the browser using @bkper/web-auth.
-                this.books = await this.bkper.getBooks();
-                // Load the same kind of data through this app's server API.
-                await this.loadServerBooks();
-            }
-        } catch (error) {
-            console.error('Error loading data:', error);
-        } finally {
-            this.loading = false;
-        }
-    }
-
-    private getAppApi(): AppApi {
-        if (!this.appApi) {
-            throw new Error('App API is not initialized');
-        }
-        return this.appApi;
-    }
-
-    private async loadBook(bookId: string) {
-        this.selectedBookError = null;
-        this.bookName = null;
-        this.balanceContainers = [];
-
-        try {
-            const payload = await this.getAppApi().getBookBalances(bookId);
-            this.bookName = payload.book.name;
-            this.balanceContainers = payload.balances;
-        } catch (error) {
-            console.error('Error loading book from server API:', error);
-            this.selectedBookError = error instanceof Error ? error.message : String(error);
-        }
-    }
-
-    private async loadServerBooks() {
-        this.serverBooksError = null;
-
-        try {
-            this.serverBooks = await this.getAppApi().getBooks();
-        } catch (error) {
-            console.error('Error loading books from server API:', error);
-            this.serverBooksError = error instanceof Error ? error.message : String(error);
-            this.serverBooks = [];
-        }
-    }
-
-    private handleBookClick(bookId: string) {
-        window.location.href = `?bookId=${bookId}`;
-    }
-
-    private getUserDisplayName(): string {
-        if (!this.user) return '';
-        return this.user.getName() || this.user.getFullName() || 'there';
-    }
+    private readonly controller = new AppController(this);
 
     render() {
-        if (this.loading) {
+        const state = this.controller.state;
+
+        if (state.loading) {
             return html`
                 <div class="container">
                     <div class="loading">Loading...</div>
@@ -265,35 +134,35 @@ export class MyApp extends LitElement {
         }
 
         // Book view: show accounts with balances, or a visible load error.
-        if (this.bookId) {
-            return this.renderBookView();
+        if (state.bookId) {
+            return this.renderBookView(state);
         }
 
         // Book picker: show list of books
-        return this.renderBookPicker();
+        return this.renderBookPicker(state);
     }
 
-    private renderBookPicker() {
+    private renderBookPicker(state: AppState) {
         return html`
             <div class="container">
                 <div class="header">
                     <div>
-                        <h1>Hello, ${this.getUserDisplayName()}!</h1>
+                        <h1>Hello, ${state.userDisplayName}!</h1>
                         <h2>Select a book to continue</h2>
                     </div>
                 </div>
 
-                ${this.books.length === 0
+                ${state.books.length === 0
                     ? html`<div class="empty">No books found</div>`
                     : html`
                           <div class="list">
-                              ${this.books.map(
+                              ${state.books.map(
                                   book => html`
                                       <div
                                           class="list-item"
-                                          @click=${() => this.handleBookClick(book.getId())}
+                                          @click=${() => this.handleBookClick(book.id)}
                                       >
-                                          <span class="list-item-name">${book.getName()}</span>
+                                          <span class="list-item-name">${book.name}</span>
                                       </div>
                                   `
                               )}
@@ -307,13 +176,13 @@ export class MyApp extends LitElement {
                         The platform validates it before the app server calls Bkper with outbound
                         auth injection.
                     </p>
-                    ${this.serverBooksError
-                        ? html`<div class="error">${this.serverBooksError}</div>`
-                        : this.serverBooks.length === 0
+                    ${state.serverBooksError
+                        ? html`<div class="error">${state.serverBooksError}</div>`
+                        : state.serverBooks.length === 0
                           ? html`<div class="empty">No books returned by server API</div>`
                           : html`
                                 <div class="list">
-                                    ${this.serverBooks.map(
+                                    ${state.serverBooks.map(
                                         book => html`
                                             <div
                                                 class="list-item"
@@ -330,34 +199,34 @@ export class MyApp extends LitElement {
         `;
     }
 
-    private renderBookView() {
+    private renderBookView(state: AppState) {
         return html`
             <div class="container">
                 <a href="?" class="back-link">&larr; Back to books</a>
 
-                ${this.selectedBookError
+                ${state.selectedBookError
                     ? html`
                           <div class="header">
                               <div>
                                   <h1>Could not load selected book</h1>
-                                  <h2>${this.bookId}</h2>
+                                  <h2>${state.bookId}</h2>
                               </div>
                           </div>
-                          <div class="error">${this.selectedBookError}</div>
+                          <div class="error">${state.selectedBookError}</div>
                       `
                     : html`
                           <div class="header">
                               <div>
-                                  <h1>${this.bookName ?? 'Selected book'}</h1>
+                                  <h1>${state.bookName ?? 'Selected book'}</h1>
                                   <h2>Accounts</h2>
                               </div>
                           </div>
                       `}
-                ${!this.selectedBookError && this.balanceContainers.length === 0
+                ${!state.selectedBookError && state.balanceContainers.length === 0
                     ? html`<div class="empty">No accounts found</div>`
                     : html`
                           <div class="list">
-                              ${this.balanceContainers.map(
+                              ${state.balanceContainers.map(
                                   container => html`
                                       <div class="list-item no-hover">
                                           <span class="list-item-name">${container.name}</span>
@@ -371,6 +240,10 @@ export class MyApp extends LitElement {
                       `}
             </div>
         `;
+    }
+
+    private handleBookClick(bookId: string) {
+        this.controller.selectBook(bookId);
     }
 }
 

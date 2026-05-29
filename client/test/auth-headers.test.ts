@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { createBearerAuthHeaders } from '../src/auth-headers';
+import { createBearerAuthHeaders } from '../src/api/auth-headers';
 
 describe('createBearerAuthHeaders', () => {
     it('builds an Authorization Bearer header', () => {
