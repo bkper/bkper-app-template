@@ -2,29 +2,10 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { BkperAuth } from '@bkper/web-auth';
 import { Bkper, Book, User } from 'bkper-js';
-import { createBearerAuthHeaders } from '../auth-headers';
+import { createAppApi, type AppApi, type BalanceContainer, type BookSummary } from '../api/app-api';
 
 const isLocalDev =
     window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-interface BookSummary {
-    id: string;
-    name: string;
-}
-
-interface ServerBooksResponse {
-    books?: BookSummary[];
-}
-
-interface ServerBookBalance {
-    name: string;
-    cumulativeBalanceText: string;
-}
-
-interface ServerBookBalancesResponse {
-    book?: BookSummary;
-    balances?: ServerBookBalance[];
-}
 
 @customElement('my-app')
 export class MyApp extends LitElement {
@@ -160,6 +141,7 @@ export class MyApp extends LitElement {
     });
 
     private bkper: Bkper | null = null;
+    private appApi: AppApi | null = null;
 
     @state()
     private loading = true;
@@ -183,7 +165,7 @@ export class MyApp extends LitElement {
     private selectedBookError: string | null = null;
 
     @state()
-    private balanceContainers: ServerBookBalance[] = [];
+    private balanceContainers: BalanceContainer[] = [];
 
     @state()
     private bookId: string | null = null;
@@ -203,6 +185,9 @@ export class MyApp extends LitElement {
         // Initialize bkper-js with auth token
         this.bkper = new Bkper({
             oauthTokenProvider: async () => this.auth.getAccessToken(),
+        });
+        this.appApi = createAppApi({
+            getAccessToken: () => this.auth.getAccessToken(),
         });
 
         this.loading = true;
@@ -227,21 +212,22 @@ export class MyApp extends LitElement {
         }
     }
 
+    private getAppApi(): AppApi {
+        if (!this.appApi) {
+            throw new Error('App API is not initialized');
+        }
+        return this.appApi;
+    }
+
     private async loadBook(bookId: string) {
         this.selectedBookError = null;
         this.bookName = null;
         this.balanceContainers = [];
 
         try {
-            const response = await fetch(`/api/books/${encodeURIComponent(bookId)}/balances`, {
-                headers: createBearerAuthHeaders(this.auth.getAccessToken()),
-            });
-            if (!response.ok) {
-                throw new Error(`Server API returned ${response.status}`);
-            }
-            const payload: ServerBookBalancesResponse = await response.json();
-            this.bookName = payload.book?.name ?? 'Untitled book';
-            this.balanceContainers = payload.balances ?? [];
+            const payload = await this.getAppApi().getBookBalances(bookId);
+            this.bookName = payload.book.name;
+            this.balanceContainers = payload.balances;
         } catch (error) {
             console.error('Error loading book from server API:', error);
             this.selectedBookError = error instanceof Error ? error.message : String(error);
@@ -252,14 +238,7 @@ export class MyApp extends LitElement {
         this.serverBooksError = null;
 
         try {
-            const response = await fetch('/api/books', {
-                headers: createBearerAuthHeaders(this.auth.getAccessToken()),
-            });
-            if (!response.ok) {
-                throw new Error(`Server API returned ${response.status}`);
-            }
-            const payload: ServerBooksResponse = await response.json();
-            this.serverBooks = payload.books ?? [];
+            this.serverBooks = await this.getAppApi().getBooks();
         } catch (error) {
             console.error('Error loading books from server API:', error);
             this.serverBooksError = error instanceof Error ? error.message : String(error);
@@ -324,9 +303,9 @@ export class MyApp extends LitElement {
                 <div class="section">
                     <h2>Server API example</h2>
                     <p class="note">
-                        These books are loaded through <code>/api/books</code> with a bearer
-                        token. The platform validates it before the app server calls Bkper with
-                        outbound auth injection.
+                        These books are loaded through <code>/api/books</code> with a bearer token.
+                        The platform validates it before the app server calls Bkper with outbound
+                        auth injection.
                     </p>
                     ${this.serverBooksError
                         ? html`<div class="error">${this.serverBooksError}</div>`
@@ -374,7 +353,6 @@ export class MyApp extends LitElement {
                               </div>
                           </div>
                       `}
-
                 ${!this.selectedBookError && this.balanceContainers.length === 0
                     ? html`<div class="empty">No accounts found</div>`
                     : html`

@@ -1,55 +1,135 @@
-import { Hono } from 'hono';
+import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { Bkper, Book } from 'bkper-js';
 import { handleTransactionChecked } from './handlers/transaction-checked.js';
+import { openApiDocumentConfig } from './api/openapi.js';
+import {
+    apiErrorResponses,
+    BookBalancesResponseSchema,
+    BookIdParamSchema,
+    BooksResponseSchema,
+    PingResponseSchema,
+} from './api/schemas.js';
 import type { EventResult } from './types.js';
 import type { Env } from '../../env.js';
 
-const app = new Hono<{ Bindings: Env }>();
+type ApiErrorCode = string;
+
+function buildApiError(code: ApiErrorCode, message: string) {
+    return {
+        success: false as const,
+        error: { code, message },
+    };
+}
+
+const app = new OpenAPIHono<{ Bindings: Env }>({
+    defaultHook: (result, c) => {
+        if (!result.success) {
+            const message = result.error.issues[0]?.message ?? 'Invalid request';
+            return c.json(buildApiError('INVALID_REQUEST', message), 400);
+        }
+    },
+});
 
 app.use(logger());
 app.use(prettyJSON());
 
 app.onError((err, c) => {
     console.error(err);
+    if (c.req.path.startsWith('/api/')) {
+        return c.json(buildApiError('INTERNAL_ERROR', err.message), 500);
+    }
     return c.json({ error: err.message }, 500);
 });
 
 app.get('/health', c => c.json({ status: 'ok' }));
 
-app.get('/api/ping', c => c.json({ ok: true, source: 'my-app' }));
-
-app.get('/api/books', async c => {
-    const bkper = new Bkper();
-    const books = await bkper.getBooks();
-    return c.json({
-        books: books
-            .map(book => ({
-                id: book.getId(),
-                name: book.getName() ?? 'Untitled book',
-            }))
-            .filter((book): book is { id: string; name: string } => Boolean(book.id)),
-    });
+const pingRoute = createRoute({
+    method: 'get',
+    path: '/api/ping',
+    tags: ['API'],
+    summary: 'Ping app API',
+    responses: {
+        200: {
+            description: 'API is reachable',
+            content: { 'application/json': { schema: PingResponseSchema } },
+        },
+    },
 });
 
-app.get('/api/books/:bookId/balances', async c => {
-    const bookId = c.req.param('bookId');
+app.openapi(pingRoute, c => c.json({ ok: true, source: 'my-app' }, 200));
+
+const booksRoute = createRoute({
+    method: 'get',
+    path: '/api/books',
+    tags: ['API'],
+    summary: 'List accessible books',
+    description: 'Returns the books visible to the authenticated user.',
+    responses: {
+        200: {
+            description: 'Accessible books',
+            content: { 'application/json': { schema: BooksResponseSchema } },
+        },
+        ...apiErrorResponses,
+    },
+});
+
+app.openapi(booksRoute, async c => {
+    const bkper = new Bkper();
+    const books = await bkper.getBooks();
+    return c.json(
+        {
+            books: books
+                .map(book => ({
+                    id: book.getId(),
+                    name: book.getName() ?? 'Untitled book',
+                }))
+                .filter((book): book is { id: string; name: string } => Boolean(book.id)),
+        },
+        200
+    );
+});
+
+const bookBalancesRoute = createRoute({
+    method: 'get',
+    path: '/api/books/{bookId}/balances',
+    tags: ['API'],
+    summary: 'Get book account balances',
+    request: {
+        params: BookIdParamSchema,
+    },
+    responses: {
+        200: {
+            description: 'Book account balances',
+            content: { 'application/json': { schema: BookBalancesResponseSchema } },
+        },
+        ...apiErrorResponses,
+    },
+});
+
+app.openapi(bookBalancesRoute, async c => {
+    const { bookId } = c.req.valid('param');
     const bkper = new Bkper();
     const book = await bkper.getBook(bookId);
     const report = await book.getBalancesReport('');
 
-    return c.json({
-        book: {
-            id: book.getId(),
-            name: book.getName() ?? 'Untitled book',
+    return c.json(
+        {
+            book: {
+                id: book.getId(),
+                name: book.getName() ?? 'Untitled book',
+            },
+            balances: report.getBalancesContainers().map(container => ({
+                name: container.getName(),
+                cumulativeBalanceText: container.getCumulativeBalanceText(),
+            })),
         },
-        balances: report.getBalancesContainers().map(container => ({
-            name: container.getName(),
-            cumulativeBalanceText: container.getCumulativeBalanceText(),
-        })),
-    });
+        200
+    );
 });
+
+app.doc('/openapi.json', openApiDocumentConfig);
 
 app.post('/events', async c => {
     try {
@@ -79,20 +159,11 @@ app.post('/events', async c => {
     }
 });
 
-app.get('/api/test/kv/:key', async c => {
-    const key = c.req.param('key');
-    const value = await c.env.KV.get(key);
-    return c.json({ key, value, found: value !== null });
-});
-
-app.post('/api/test/kv', async c => {
-    const { key, value } = await c.req.json<{ key: string; value: string }>();
-    await c.env.KV.put(key, value);
-    return c.json({ success: true, key });
-});
-
-app.all('/api/*', c => c.json({ error: 'Not found' }, 404));
+app.all('/api/*', c =>
+    c.json(buildApiError('NOT_FOUND', `Route not found: ${c.req.method} ${c.req.path}`), 404)
+);
 
 app.get('*', c => c.env.ASSETS.fetch(c.req.raw));
 
 export default app;
+export { buildApiError };

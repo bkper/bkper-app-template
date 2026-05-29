@@ -8,9 +8,10 @@
         "dev:client": "vite dev",
         "dev:server": "bkper app dev",
         "prebuild": "bun install",
-        "build": "vite build && bkper app build",
+        "build": "npm run api && vite build && bkper app build",
         "test": "bun test",
         "typecheck": "tsc --noEmit",
+        "api": "bun scripts/generate-api-types.ts",
         "deploy": "npm run build && bkper app sync && bkper app deploy",
         "deploy:preview": "npm run build && bkper app sync && bkper app deploy --preview"
     },
@@ -21,13 +22,17 @@
         "miniflare": "^4",
         "prettier": "^3",
         "typescript": "^5",
-        "vite": "^7"
+        "vite": "^7",
+        "openapi-typescript": "^7.10.1"
     },
     "dependencies": {
         "@bkper/web-auth": "latest",
         "@bkper/web-design": "latest",
+        "@hono/zod-openapi": "^1.2.0",
         "bkper-js": "latest",
         "hono": "^4",
-        "lit": "^3.3.2"
+        "lit": "^3.3.2",
+        "openapi-fetch": "^0.15.0",
+        "zod": "^4.0.0"
     }
 }

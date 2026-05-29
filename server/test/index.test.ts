@@ -38,7 +38,10 @@ describe('server Worker', () => {
 
     it('returns books loaded through bkper-js from a server-side API route', async () => {
         const apiRequests: Request[] = [];
-        globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        globalThis.fetch = async (
+            input: RequestInfo | URL,
+            init?: RequestInit
+        ): Promise<Response> => {
             const request = input instanceof Request ? input : new Request(input, init);
             apiRequests.push(request);
             return new Response(
@@ -68,7 +71,10 @@ describe('server Worker', () => {
 
     it('returns book balances loaded through a server-side API route', async () => {
         const apiRequests: Request[] = [];
-        globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        globalThis.fetch = async (
+            input: RequestInfo | URL,
+            init?: RequestInit
+        ): Promise<Response> => {
             const request = input instanceof Request ? input : new Request(input, init);
             apiRequests.push(request);
 
@@ -84,9 +90,17 @@ describe('server Worker', () => {
                 );
             }
 
-            return new Response(JSON.stringify({ id: 'book-1', name: 'Main Book', fractionDigits: 2, decimalSeparator: 'DOT' }), {
-                headers: { 'content-type': 'application/json' },
-            });
+            return new Response(
+                JSON.stringify({
+                    id: 'book-1',
+                    name: 'Main Book',
+                    fractionDigits: 2,
+                    decimalSeparator: 'DOT',
+                }),
+                {
+                    headers: { 'content-type': 'application/json' },
+                }
+            );
         };
 
         const response = await app.request('/api/books/book-1/balances');
@@ -128,10 +142,13 @@ describe('server Worker', () => {
         const body = await response.json();
 
         expect(response.status).toBe(500);
-        expect(body).toEqual({ error: 'Login Required.' });
+        expect(body).toEqual({
+            success: false,
+            error: { code: 'INTERNAL_ERROR', message: 'Login Required.' },
+        });
     });
 
-    it('keeps KV example endpoints under the authenticated API namespace', async () => {
+    it('does not expose live KV test endpoints', async () => {
         const env = createTestEnv();
 
         const writeResponse = await app.request(
@@ -145,13 +162,15 @@ describe('server Worker', () => {
         );
         const readResponse = await app.request('/api/test/kv/sample-key', {}, env);
 
-        expect(writeResponse.status).toBe(200);
-        expect(await writeResponse.json()).toEqual({ success: true, key: 'sample-key' });
-        expect(readResponse.status).toBe(200);
+        expect(writeResponse.status).toBe(404);
+        expect(await writeResponse.json()).toEqual({
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Route not found: POST /api/test/kv' },
+        });
+        expect(readResponse.status).toBe(404);
         expect(await readResponse.json()).toEqual({
-            key: 'sample-key',
-            value: 'sample-value',
-            found: true,
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Route not found: GET /api/test/kv/sample-key' },
         });
     });
 
@@ -159,7 +178,10 @@ describe('server Worker', () => {
         const response = await app.request('/api/missing', {}, createTestEnv());
 
         expect(response.status).toBe(404);
-        expect(await response.json()).toEqual({ error: 'Not found' });
+        expect(await response.json()).toEqual({
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Route not found: GET /api/missing' },
+        });
     });
 
     it('handles events without reading token or agent headers', async () => {
@@ -182,7 +204,10 @@ describe('server Worker', () => {
 
     it('creates a balanced draft transaction for checked transaction events', async () => {
         const apiRequests: Request[] = [];
-        globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        globalThis.fetch = async (
+            input: RequestInfo | URL,
+            init?: RequestInit
+        ): Promise<Response> => {
             const request = input instanceof Request ? input : new Request(input, init);
             apiRequests.push(request);
             return new Response(
