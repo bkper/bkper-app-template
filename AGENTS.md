@@ -8,25 +8,40 @@ A Bkper app using the single Worker platform model:
 - **Server**: Hono Worker serving typed OpenAPI `/api/*` routes and `/events`
 - **Events**: Creates a 20% draft transaction on `TRANSACTION_CHECKED`
 
+## Architecture principles
+
+This template is intentionally opinionated. It should be enough to bootstrap an app and provide a strong basis for growing it.
+
+Treat the app API as a first-class product surface:
+
+- Expose reusable app behavior through typed `/api/*` routes whenever it may be used by more than one caller.
+- The shipped web client is only one consumer of the API; scripts, external clients, and agents should be able to call the same routes.
+- Keep business behavior in `server/src/services/` and expose it through thin routes in `server/src/api/routes.ts`.
+- Keep route contracts in `server/src/api/schemas.ts` and document them through the generated OpenAPI spec at `/openapi.json`.
+- Keep Lit components focused on rendering and user intent. Do not hide app behavior only in UI components.
+- Prefer adding meaning with typed request/response schemas and properties before adding new structural layers.
+
+When adding API behavior, update the server schema and route, add or update unit tests, and regenerate the typed client API types with `bun run api`.
+
 ## Post-Init Checklist
 
 After running `bkper app init`, customize:
 
 1. `bkper.yaml` identity and ownership fields
 2. Logos in `client/public/images/`
-3. `README.md` for end users
+3. `README.md` for end users, including the app's API base URL and `/openapi.json` link
 
 ## Authentication
 
 Do not implement custom OAuth flows, redirect handling, or token refresh.
 
-| Context               | Pattern                                                                                                              | Location                          |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Web client direct API | `@bkper/web-auth` in `auth/` → `auth.getAccessToken()` → `services/` using `bkper-js`                                 | `client/src/auth/auth-session.ts`, `client/src/services/book-service.ts` |
-| Client app API calls  | Browser sends `Authorization: Bearer <token>` to `/api/*` through the typed API client                                | `client/src/api/app-api.ts`       |
-| Server API routes     | Platform validates bearer auth and injects auth for server-side `new Bkper()` calls                                   | `server/src/api/routes.ts`        |
-| Event handlers        | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection                                   | `server/src/events/routes.ts`     |
-| Local dev             | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`)                               | `vite.config.ts`, `bkper app dev` |
+| Context               | Pattern                                                                                                               | Location                          |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Web client direct API | `@bkper/web-auth` in `auth/` → `auth.getAccessToken()` → `services/` using `bkper-js`                                  | `client/src/auth/auth-session.ts`, `client/src/services/book-service.ts` |
+| Client app API calls  | Any browser, script, or agent sends `Authorization: Bearer <token>` to `/api/*`; the shipped client uses the typed API client | `client/src/api/app-api.ts`       |
+| Server API routes     | Platform validates bearer auth and injects auth for server-side `new Bkper()` calls                                    | `server/src/api/routes.ts`        |
+| Event handlers        | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection                                    | `server/src/events/routes.ts`     |
+| Local dev             | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`)                                | `vite.config.ts`, `bkper app dev` |
 
 ## Structure
 
@@ -60,6 +75,29 @@ server/src/
 ```
 
 Keep route handlers thin. Put API shape and validation in `api/`, event transport concerns in `events/`, and business behavior in `services/`.
+
+## API contract
+
+The app's public API lives under `/api/*` and is documented at `/openapi.json`.
+
+| Concern                    | File                                      |
+| -------------------------- | ----------------------------------------- |
+| OpenAPI document metadata  | `server/src/api/openapi.ts`               |
+| Request/response schemas   | `server/src/api/schemas.ts`               |
+| API route definitions      | `server/src/api/routes.ts`                |
+| Server business behavior   | `server/src/services/`                    |
+| Generated client types     | `client/src/api/generated/types.d.ts`     |
+| Shipped web client wrapper | `client/src/api/app-api.ts`               |
+
+Design API operations around the app's domain behavior, not around the current UI. The UI should call the same routes that another authenticated client could call.
+
+Authentication for `/api/*` callers is always bearer-token based:
+
+```http
+Authorization: Bearer <bkper-oauth-token>
+```
+
+Inside server API routes, do not read or forward that token manually. Use server-side `new Bkper()` and let the platform validate inbound auth and inject outbound auth for Bkper API calls.
 
 ## Development
 
