@@ -17,7 +17,7 @@
     },
     "devDependencies": {
         "@bkper/bkper-api-types": "latest",
-        "bkper": "latest",
+        "bkper": "^4.16.0",
         "concurrently": "^9",
         "miniflare": "^4",
         "prettier": "^3",
