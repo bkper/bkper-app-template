@@ -1,5 +1,44 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-import app from '../src/index';
+import { Bkper, Book } from 'bkper-js';
+import type { Config } from 'bkper-js';
+import { AppContext, type AppContextFactory } from '../src/app-context';
+import app, { createApp } from '../src/index';
+
+interface BalanceContainerStub {
+    name: string;
+    cumulativeBalanceText: string;
+}
+
+function createBookStub(options: {
+    id: string;
+    name: string;
+    balances?: BalanceContainerStub[];
+}): Book {
+    return {
+        getId: () => options.id,
+        getName: () => options.name,
+        getBalancesReport: async () => ({
+            getBalancesContainers: () =>
+                (options.balances ?? []).map(balance => ({
+                    getName: () => balance.name,
+                    getCumulativeBalanceText: () => balance.cumulativeBalanceText,
+                })),
+        }),
+    } as unknown as Book;
+}
+
+function createBkperStub(overrides: Partial<Bkper> = {}): Bkper {
+    return {
+        getBooks: async () => [],
+        getBook: async bookId => createBookStub({ id: bookId, name: 'Test Book' }),
+        getConfig: () => ({} satisfies Config),
+        ...overrides,
+    } as unknown as Bkper;
+}
+
+function createContextFactory(bkper: Bkper): AppContextFactory {
+    return c => new AppContext(bkper, c.env);
+}
 
 function createTestEnv() {
     const values = new Map<string, string>();
@@ -36,26 +75,32 @@ describe('server Worker', () => {
         expect(body).toEqual({ ok: true, source: 'my-app' });
     });
 
-    it('returns books loaded through bkper-js from a server-side API route', async () => {
-        const apiRequests: Request[] = [];
-        globalThis.fetch = async (
-            input: RequestInfo | URL,
-            init?: RequestInit
-        ): Promise<Response> => {
-            const request = input instanceof Request ? input : new Request(input, init);
-            apiRequests.push(request);
-            return new Response(
-                JSON.stringify({
-                    items: [
-                        { id: 'book-1', name: 'Main Book' },
-                        { id: 'book-2', name: 'Operations Book' },
-                    ],
-                }),
-                { headers: { 'content-type': 'application/json' } }
-            );
-        };
+    it('creates request context through middleware for app API routes', async () => {
+        let contextCreations = 0;
+        const testApp = createApp(c => {
+            contextCreations += 1;
+            return new AppContext(createBkperStub(), c.env);
+        });
 
-        const response = await app.request('/api/books');
+        const response = await testApp.request('/api/ping');
+
+        expect(response.status).toBe(200);
+        expect(contextCreations).toBe(1);
+    });
+
+    it('returns books from an injected request context', async () => {
+        const testApp = createApp(
+            createContextFactory(
+                createBkperStub({
+                    getBooks: async () => [
+                        createBookStub({ id: 'book-1', name: 'Main Book' }),
+                        createBookStub({ id: 'book-2', name: 'Operations Book' }),
+                    ],
+                })
+            )
+        );
+
+        const response = await testApp.request('/api/books');
         const body = await response.json();
 
         expect(response.status).toBe(200);
@@ -65,45 +110,26 @@ describe('server Worker', () => {
                 { id: 'book-2', name: 'Operations Book' },
             ],
         });
-        expect(apiRequests).toHaveLength(1);
-        expect(apiRequests[0].url).toStartWith('https://api.bkper.app/v5/books/');
     });
 
-    it('returns book balances loaded through a server-side API route', async () => {
-        const apiRequests: Request[] = [];
-        globalThis.fetch = async (
-            input: RequestInfo | URL,
-            init?: RequestInit
-        ): Promise<Response> => {
-            const request = input instanceof Request ? input : new Request(input, init);
-            apiRequests.push(request);
+    it('returns book balances from an injected request context', async () => {
+        const testApp = createApp(
+            createContextFactory(
+                createBkperStub({
+                    getBook: async bookId =>
+                        createBookStub({
+                            id: bookId,
+                            name: 'Main Book',
+                            balances: [
+                                { name: 'Bank', cumulativeBalanceText: '123.45' },
+                                { name: 'Sales', cumulativeBalanceText: '-123.45' },
+                            ],
+                        }),
+                })
+            )
+        );
 
-            if (request.url.includes('/v5/books/book-1/balances')) {
-                return new Response(
-                    JSON.stringify({
-                        accountBalances: [
-                            { name: 'Bank', cumulativeBalance: '123.45' },
-                            { name: 'Sales', cumulativeBalance: '-123.45' },
-                        ],
-                    }),
-                    { headers: { 'content-type': 'application/json' } }
-                );
-            }
-
-            return new Response(
-                JSON.stringify({
-                    id: 'book-1',
-                    name: 'Main Book',
-                    fractionDigits: 2,
-                    decimalSeparator: 'DOT',
-                }),
-                {
-                    headers: { 'content-type': 'application/json' },
-                }
-            );
-        };
-
-        const response = await app.request('/api/books/book-1/balances');
+        const response = await testApp.request('/api/books/book-1/balances');
         const body = await response.json();
 
         expect(response.status).toBe(200);
@@ -114,9 +140,6 @@ describe('server Worker', () => {
                 { name: 'Sales', cumulativeBalanceText: '-123.45' },
             ],
         });
-        expect(apiRequests).toHaveLength(2);
-        expect(apiRequests[0].url).toStartWith('https://api.bkper.app/v5/books/book-1');
-        expect(apiRequests[1].url).toStartWith('https://api.bkper.app/v5/books/book-1/balances');
     });
 
     it('returns JSON errors for uncaught server API failures', async () => {

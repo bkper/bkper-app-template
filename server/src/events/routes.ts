@@ -1,10 +1,10 @@
 import type { OpenAPIHono } from '@hono/zod-openapi';
-import { Bkper, Book } from 'bkper-js';
+import { Book } from 'bkper-js';
 import { handleTransactionChecked } from './handlers/transaction-checked.js';
 import type { EventResult } from './types.js';
-import type { Env } from '../../../env.js';
+import type { AppEnv } from '../app-context.js';
 
-type App = OpenAPIHono<{ Bindings: Env }>;
+type App = OpenAPIHono<AppEnv>;
 
 export function registerEventRoutes(app: App): void {
     app.post('/events', async c => {
@@ -15,8 +15,8 @@ export function registerEventRoutes(app: App): void {
                 return c.json({ error: 'Missing book in event payload' }, 400);
             }
 
-            const bkper = new Bkper();
-            const book = new Book(event.book, bkper.getConfig());
+            const context = c.get('appContext');
+            const book = new Book(event.book, context.bkper.getConfig());
             const result = await dispatchEvent(book, event);
 
             return c.json(result);

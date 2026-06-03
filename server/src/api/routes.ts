@@ -11,9 +11,9 @@ import {
 } from './schemas.js';
 import { buildApiError } from './errors.js';
 import { getBookBalances, listBooks } from '../services/book-service.js';
-import type { Env } from '../../../env.js';
+import type { AppEnv } from '../app-context.js';
 
-type App = OpenAPIHono<{ Bindings: Env }>;
+type App = OpenAPIHono<AppEnv>;
 
 const pingRoute = createRoute({
     method: 'get',
@@ -54,11 +54,15 @@ const bookBalancesRoute = createRoute({
 export function registerApiRoutes(app: App): void {
     app.openapi(pingRoute, c => c.json({ ok: true, source: 'my-app' }, 200));
 
-    app.openapi(booksRoute, async c => c.json({ books: await listBooks() }, 200));
+    app.openapi(booksRoute, async c => {
+        const context = c.get('appContext');
+        return c.json({ books: await listBooks(context) }, 200);
+    });
 
     app.openapi(bookBalancesRoute, async c => {
+        const context = c.get('appContext');
         const { bookId } = c.req.valid('param');
-        return c.json(await getBookBalances(bookId), 200);
+        return c.json(await getBookBalances(context, bookId), 200);
     });
 
     app.doc('/openapi.json', openApiDocumentConfig);
