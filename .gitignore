@@ -3,8 +3,10 @@ node_modules/
 
 # Build output
 dist/
+*.tsbuildinfo
 
-# Lockfile - bun.lock SHOULD be committed for reproducible builds
+# Lockfile - ignored so apps scaffolded from this template resolve current compatible dependencies
+bun.lock
 # bun.lockb (old binary format, no longer used)
 
 # Wrangler
@@ -31,4 +33,3 @@ Thumbs.db
 
 # Environment variables
 .env
-bun.lock

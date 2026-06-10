@@ -1,0 +1,23 @@
+{
+    "name": "my-bkper-app-client",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "clean": "rm -rf node_modules dist",
+        "dev": "vite dev",
+        "build": "vite build",
+        "test": "bun test",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@bkper/web-auth": "latest",
+        "@bkper/web-design": "latest",
+        "bkper-js": "latest",
+        "lit": "^3.3.2",
+        "openapi-fetch": "^0.15.0"
+    },
+    "devDependencies": {
+        "typescript": "^5",
+        "vite": "^7"
+    }
+}

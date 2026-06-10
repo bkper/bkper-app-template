@@ -1,0 +1,20 @@
+{
+    "name": "my-bkper-app-server",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "clean": "rm -rf node_modules dist",
+        "test": "bun test",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@hono/zod-openapi": "^1.2.0",
+        "bkper-js": "latest",
+        "hono": "^4",
+        "zod": "^4.0.0"
+    },
+    "devDependencies": {
+        "@bkper/bkper-api-types": "latest",
+        "typescript": "^5"
+    }
+}

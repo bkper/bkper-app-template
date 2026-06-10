@@ -1,19 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
-    "types": ["@bkper/bkper-api-types"],
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "dist"
-  },
-  "include": ["client/src/**/*.ts", "server/src/**/*.ts", "env.d.ts"]
+    "files": [],
+    "references": [
+        { "path": "./client" },
+        { "path": "./server" }
+    ]
 }
-

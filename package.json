@@ -1,38 +1,36 @@
 {
     "name": "my-bkper-app",
     "private": true,
+    "workspaces": [
+        "client",
+        "server"
+    ],
     "scripts": {
-        "clean": "rm -rf node_modules dist",
+        "clean": "rm -rf node_modules dist client/node_modules client/dist server/node_modules server/dist",
         "predev": "bun install",
-        "dev": "concurrently \"vite dev\" \"bkper app dev\"",
-        "dev:client": "vite dev",
+        "dev": "concurrently \"bun run dev:client\" \"bun run dev:server\"",
+        "dev:client": "bun --cwd client dev",
         "dev:server": "bkper app dev",
         "prebuild": "bun install",
-        "build": "bun run api && vite build && bkper app build",
-        "test": "bun test",
-        "typecheck": "tsc --noEmit",
+        "build": "bun run api && bun run typecheck && bun run build:client && bun run build:server",
+        "build:client": "bun --cwd client build",
+        "build:server": "bkper app build",
+        "test": "bun run test:client && bun run test:server",
+        "test:client": "bun --cwd client test",
+        "test:server": "bun --cwd server test",
+        "typecheck": "bun run typecheck:client && bun run typecheck:server",
+        "typecheck:client": "bun --cwd client typecheck",
+        "typecheck:server": "bun --cwd server typecheck",
         "api": "bun scripts/generate-api-types.ts",
         "deploy": "bun run build && bkper app sync && bkper app deploy",
         "deploy:preview": "bun run build && bkper app sync && bkper app deploy --preview"
     },
     "devDependencies": {
-        "@bkper/bkper-api-types": "latest",
         "bkper": "^4.16.0",
         "concurrently": "^9",
         "miniflare": "^4",
+        "openapi-typescript": "^7.10.1",
         "prettier": "^3",
-        "typescript": "^5",
-        "vite": "^7",
-        "openapi-typescript": "^7.10.1"
-    },
-    "dependencies": {
-        "@bkper/web-auth": "latest",
-        "@bkper/web-design": "latest",
-        "@hono/zod-openapi": "^1.2.0",
-        "bkper-js": "latest",
-        "hono": "^4",
-        "lit": "^3.3.2",
-        "openapi-fetch": "^0.15.0",
-        "zod": "^4.0.0"
+        "typescript": "^5"
     }
 }

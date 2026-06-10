@@ -143,32 +143,30 @@ describe('server Worker', () => {
     });
 
     it('returns JSON errors for uncaught server API failures', async () => {
-        globalThis.fetch = async (): Promise<Response> =>
-            new Response(
-                JSON.stringify({
-                    error: {
-                        errors: [
-                            {
-                                domain: 'global',
-                                reason: 'forbidden',
-                                message: 'Login Required.',
-                            },
-                        ],
-                        code: 403,
-                        message: 'Login Required.',
+        const testApp = createApp(
+            createContextFactory(
+                createBkperStub({
+                    getBooks: async () => {
+                        throw new Error('Login Required.');
                     },
-                }),
-                { status: 403, headers: { 'content-type': 'application/json' } }
-            );
+                })
+            )
+        );
+        const originalConsoleError = console.error;
+        console.error = () => undefined;
 
-        const response = await app.request('/api/v1/books');
-        const body = await response.json();
+        try {
+            const response = await testApp.request('/api/v1/books');
+            const body = await response.json();
 
-        expect(response.status).toBe(500);
-        expect(body).toEqual({
-            success: false,
-            error: { code: 'INTERNAL_ERROR', message: 'Login Required.' },
-        });
+            expect(response.status).toBe(500);
+            expect(body).toEqual({
+                success: false,
+                error: { code: 'INTERNAL_ERROR', message: 'Login Required.' },
+            });
+        } finally {
+            console.error = originalConsoleError;
+        }
     });
 
     it('does not expose live KV test endpoints', async () => {

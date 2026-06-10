@@ -41,14 +41,16 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 | Client app API calls  | Any browser, script, or agent sends `Authorization: Bearer <token>` to `/api/v1/*`; the shipped client uses the typed API client | `client/src/api/app-api.ts`       |
 | Server API routes     | Platform validates bearer auth and injects auth for server-side `new Bkper()` calls                                    | `server/src/api/routes.ts`        |
 | Event handlers        | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection                                    | `server/src/events/routes.ts`     |
-| Local dev             | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`)                                | `vite.config.ts`, `bkper app dev` |
+| Local dev             | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`)                                | `client/vite.config.ts`, `bkper app dev` |
 
 ## Structure
 
 ```
-client/  — Frontend UI (Vite + Lit)
-server/  — Hono Worker for /api/v1/* and /events
+client/  — Frontend UI package (Vite + Lit) with browser-only dependencies
+server/  — Hono Worker package for /api/v1/* and /events with server/runtime dependencies
 ```
+
+The root package orchestrates install, dev, test, build, and deploy. Keep browser UI dependencies in `client/package.json`, Worker dependencies in `server/package.json`, and root dependencies limited to cross-package tooling such as the Bkper CLI, Miniflare, and OpenAPI generation.
 
 Client code is intentionally small but layered so template users see where each concern belongs:
 
@@ -134,8 +136,8 @@ This runs:
 ## Build and deploy
 
 ```bash
-bun run preview # preview deployment
-bun run deploy  # production deployment
+bun run deploy:preview # preview deployment
+bun run deploy         # production deployment
 ```
 
 Build output:
@@ -165,6 +167,7 @@ deployment:
 | Add Bkper client behavior  | `client/src/services/book-service.ts`                           |
 | Add typed client API calls | `client/src/api/app-api.ts`                                     |
 | Add client auth behavior   | `client/src/auth/auth-session.ts`                               |
+| Configure client dev/build | `client/vite.config.ts`                                         |
 | Add API schemas            | `server/src/api/schemas.ts`                                     |
 | Add API endpoints          | `server/src/api/routes.ts`                                      |
 | Add server behavior        | `server/src/services/`                                          |
