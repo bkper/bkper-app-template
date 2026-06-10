@@ -93,12 +93,22 @@ Design API operations around the app's domain behavior, not around the current U
 
 API evolution rules:
 
-- Keep `/api/v1/*` stable once clients may depend on it.
+- `/openapi.json` is the single canonical public contract. It may contain multiple API versions over time.
+- Keep `/api/v1/*` and its existing schema names stable once clients may depend on them.
+- Do not rename or version schemas just for additive changes. Old generated clients should keep working until they explicitly upgrade.
 - Safe changes are additive: new routes, new optional request fields, and new optional response fields.
-- Breaking changes include removing or renaming fields, changing field types, changing route semantics, or making optional inputs required.
+- Breaking changes include removing or renaming fields, changing field types or meaning, changing route semantics, narrowing accepted input, or making optional inputs required.
 - Put breaking changes in a new namespace such as `/api/v2/*`; do not mutate existing `v1` contracts.
-- Mark old operations with OpenAPI `deprecated: true` before removal from a future version.
+- Add new versioned schemas only when a breaking payload shape is needed. Keep the old schema available for old routes.
+- Mark old operations with OpenAPI `deprecated: true` only after a migration path exists.
 - The committed contract snapshot is `server/test/openapi.snapshot.json`; update it only after reviewing the API change.
+
+Agent API change checklist:
+
+1. Classify the requested API change before editing code: additive or breaking.
+2. If additive, keep the existing API version and schema names; update routes, schemas, tests, generated client types, and the OpenAPI snapshot.
+3. If breaking, add a new API version such as `/api/v2/*`; preserve the old route handlers and schemas for existing clients.
+4. Never remove, rename, or tighten a published `v1` field or route unless the user explicitly asks to break compatibility.
 
 Authentication for `/api/v1/*` callers is always bearer-token based:
 

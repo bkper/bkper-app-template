@@ -45,11 +45,12 @@ Use the returned book id to call book-specific routes, such as `/api/v1/books/{b
 
 ## API evolution
 
-The public API is versioned under `/api/v1/*`. Keep existing `v1` routes stable for clients:
+The public API is versioned under `/api/v1/*` and documented in one canonical spec at `/openapi.json`. Keep existing `v1` routes and schemas stable so old clients keep working until they explicitly upgrade.
 
-- Prefer additive changes: new routes, new optional request fields, and new optional response fields.
-- Avoid breaking changes in `v1`: removing or renaming fields, changing field types, changing route behavior, or making optional inputs required.
-- Put breaking changes in a new version, such as `/api/v2/*`, while keeping `/api/v1/*` available until clients migrate.
+- Prefer additive changes in `v1`: new routes, new optional request fields, and new optional response fields.
+- Keep existing schema names stable. Do not rename or version schemas just for additive changes.
+- Avoid breaking changes in `v1`: removing or renaming fields, changing field types or meaning, changing route behavior, narrowing accepted input, or making optional inputs required.
+- Put breaking changes in a new version, such as `/api/v2/*`, while keeping `/api/v1/*` and its schemas available for existing clients.
 - Run `bun test` before deploy. The OpenAPI paths and schemas are snapshot-tested in `server/test/openapi.snapshot.json`; update that snapshot only after intentionally reviewing the API change.
 
 ## Learn More
