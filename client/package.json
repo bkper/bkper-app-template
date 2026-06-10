@@ -6,10 +6,11 @@
         "clean": "rm -rf node_modules dist",
         "dev": "vite dev",
         "build": "vite build",
-        "test": "bun test",
+        "test": "bun test --preload ./test/setup-dom.ts",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@awesome.me/webawesome": "latest",
         "@bkper/web-auth": "latest",
         "@bkper/web-design": "latest",
         "bkper-js": "latest",
@@ -17,6 +18,7 @@
         "openapi-fetch": "^0.15.0"
     },
     "devDependencies": {
+        "happy-dom": "^20.10.2",
         "typescript": "^5",
         "vite": "^7"
     }

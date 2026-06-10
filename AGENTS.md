@@ -4,7 +4,7 @@
 
 A Bkper app using the single Worker platform model:
 
-- **Client**: Book picker + accounts list with balances, layered into component, controller, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`)
+- **Client**: Lit + Web Awesome book picker and accounts list with balances, layered into component, controller, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`)
 - **Server**: Hono Worker serving typed OpenAPI `/api/v1/*` routes and `/events`
 - **Events**: Creates a 20% draft transaction on `TRANSACTION_CHECKED`
 
@@ -57,6 +57,7 @@ Client code is intentionally small but layered so template users see where each 
 ```
 client/src/
 ├── index.ts      — Browser entrypoint
+├── web-awesome.ts — Web Awesome component registration for the client UI
 ├── components/   — Lit presentation components only
 ├── app/          — UI state and lifecycle orchestration
 ├── auth/         — @bkper/web-auth session boundary
@@ -64,7 +65,7 @@ client/src/
 └── api/          — Typed /api/v1 client and generated OpenAPI types
 ```
 
-Keep components focused on rendering and user intent. Put auth mechanics in `auth/`, Bkper/client API calls in `services/` and `api/`, and page loading/navigation flow in `app/`.
+Keep components focused on rendering and user intent. Register only the Web Awesome components used by the template in `web-awesome.ts`, and style with `@bkper/web-design` tokens. Put auth mechanics in `auth/`, Bkper/client API calls in `services/` and `api/`, and page loading/navigation flow in `app/`.
 
 Server code is layered so template users can see where each concern belongs:
 
