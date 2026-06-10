@@ -68,7 +68,7 @@ describe('server Worker', () => {
     });
 
     it('returns a lightweight API ping without calling Bkper', async () => {
-        const response = await app.request('/api/ping');
+        const response = await app.request('/api/v1/ping');
         const body = await response.json();
 
         expect(response.status).toBe(200);
@@ -82,7 +82,7 @@ describe('server Worker', () => {
             return new AppContext(createBkperStub(), c.env);
         });
 
-        const response = await testApp.request('/api/ping');
+        const response = await testApp.request('/api/v1/ping');
 
         expect(response.status).toBe(200);
         expect(contextCreations).toBe(1);
@@ -100,7 +100,7 @@ describe('server Worker', () => {
             )
         );
 
-        const response = await testApp.request('/api/books');
+        const response = await testApp.request('/api/v1/books');
         const body = await response.json();
 
         expect(response.status).toBe(200);
@@ -129,7 +129,7 @@ describe('server Worker', () => {
             )
         );
 
-        const response = await testApp.request('/api/books/book-1/balances');
+        const response = await testApp.request('/api/v1/books/book-1/balances');
         const body = await response.json();
 
         expect(response.status).toBe(200);
@@ -161,7 +161,7 @@ describe('server Worker', () => {
                 { status: 403, headers: { 'content-type': 'application/json' } }
             );
 
-        const response = await app.request('/api/books');
+        const response = await app.request('/api/v1/books');
         const body = await response.json();
 
         expect(response.status).toBe(500);
@@ -204,6 +204,16 @@ describe('server Worker', () => {
         expect(await response.json()).toEqual({
             success: false,
             error: { code: 'NOT_FOUND', message: 'Route not found: GET /api/missing' },
+        });
+    });
+
+    it('does not expose unversioned public API routes', async () => {
+        const response = await app.request('/api/books', {}, createTestEnv());
+
+        expect(response.status).toBe(404);
+        expect(await response.json()).toEqual({
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Route not found: GET /api/books' },
         });
     });
 

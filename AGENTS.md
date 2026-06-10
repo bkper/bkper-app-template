@@ -5,7 +5,7 @@
 A Bkper app using the single Worker platform model:
 
 - **Client**: Book picker + accounts list with balances, layered into component, controller, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`)
-- **Server**: Hono Worker serving typed OpenAPI `/api/*` routes and `/events`
+- **Server**: Hono Worker serving typed OpenAPI `/api/v1/*` routes and `/events`
 - **Events**: Creates a 20% draft transaction on `TRANSACTION_CHECKED`
 
 ## Architecture principles
@@ -14,14 +14,14 @@ This template is intentionally opinionated. It should be enough to bootstrap an 
 
 Treat the app API as a first-class product surface:
 
-- Expose reusable app behavior through typed `/api/*` routes whenever it may be used by more than one caller.
+- Expose reusable app behavior through typed `/api/v1/*` routes whenever it may be used by more than one caller.
 - The shipped web client is only one consumer of the API; scripts, external clients, and agents should be able to call the same routes.
 - Keep business behavior in `server/src/services/` and expose it through thin routes in `server/src/api/routes.ts`.
 - Keep route contracts in `server/src/api/schemas.ts` and document them through the generated OpenAPI spec at `/openapi.json`.
 - Keep Lit components focused on rendering and user intent. Do not hide app behavior only in UI components.
 - Prefer adding meaning with typed request/response schemas and properties before adding new structural layers.
 
-When adding API behavior, update the server schema and route, add or update unit tests, and regenerate the typed client API types with `bun run api`.
+When adding API behavior, update the server schema and route, add or update unit tests, regenerate the typed client API types with `bun run api`, and intentionally update the OpenAPI snapshot when the public contract changes.
 
 ## Post-Init Checklist
 
@@ -38,7 +38,7 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 | Context               | Pattern                                                                                                               | Location                          |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
 | Web client direct API | `@bkper/web-auth` in `auth/` → `auth.getAccessToken()` → `services/` using `bkper-js`                                  | `client/src/auth/auth-session.ts`, `client/src/services/book-service.ts` |
-| Client app API calls  | Any browser, script, or agent sends `Authorization: Bearer <token>` to `/api/*`; the shipped client uses the typed API client | `client/src/api/app-api.ts`       |
+| Client app API calls  | Any browser, script, or agent sends `Authorization: Bearer <token>` to `/api/v1/*`; the shipped client uses the typed API client | `client/src/api/app-api.ts`       |
 | Server API routes     | Platform validates bearer auth and injects auth for server-side `new Bkper()` calls                                    | `server/src/api/routes.ts`        |
 | Event handlers        | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection                                    | `server/src/events/routes.ts`     |
 | Local dev             | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`)                                | `vite.config.ts`, `bkper app dev` |
@@ -47,7 +47,7 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 
 ```
 client/  — Frontend UI (Vite + Lit)
-server/  — Hono Worker for /api/* and /events
+server/  — Hono Worker for /api/v1/* and /events
 ```
 
 Client code is intentionally small but layered so template users see where each concern belongs:
@@ -59,7 +59,7 @@ client/src/
 ├── app/          — UI state and lifecycle orchestration
 ├── auth/         — @bkper/web-auth session boundary
 ├── services/     — App use cases and bkper-js orchestration
-└── api/          — Typed /api client and generated OpenAPI types
+└── api/          — Typed /api/v1 client and generated OpenAPI types
 ```
 
 Keep components focused on rendering and user intent. Put auth mechanics in `auth/`, Bkper/client API calls in `services/` and `api/`, and page loading/navigation flow in `app/`.
@@ -78,7 +78,7 @@ Keep route handlers thin. Put API shape and validation in `api/`, event transpor
 
 ## API contract
 
-The app's public API lives under `/api/*` and is documented at `/openapi.json`.
+The app's public API lives under `/api/v1/*` and is documented at `/openapi.json`.
 
 | Concern                    | File                                      |
 | -------------------------- | ----------------------------------------- |
@@ -91,7 +91,16 @@ The app's public API lives under `/api/*` and is documented at `/openapi.json`.
 
 Design API operations around the app's domain behavior, not around the current UI. The UI should call the same routes that another authenticated client could call.
 
-Authentication for `/api/*` callers is always bearer-token based:
+API evolution rules:
+
+- Keep `/api/v1/*` stable once clients may depend on it.
+- Safe changes are additive: new routes, new optional request fields, and new optional response fields.
+- Breaking changes include removing or renaming fields, changing field types, changing route semantics, or making optional inputs required.
+- Put breaking changes in a new namespace such as `/api/v2/*`; do not mutate existing `v1` contracts.
+- Mark old operations with OpenAPI `deprecated: true` before removal from a future version.
+- The committed contract snapshot is `server/test/openapi.snapshot.json`; update it only after reviewing the API change.
+
+Authentication for `/api/v1/*` callers is always bearer-token based:
 
 ```http
 Authorization: Bearer <bkper-oauth-token>

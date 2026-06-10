@@ -38,10 +38,19 @@ BKPER_TOKEN="$(bkper auth token)"
 
 curl \
   -H "Authorization: Bearer ${BKPER_TOKEN}" \
-  "https://my-app.bkper.app/api/books"
+  "https://my-app.bkper.app/api/v1/books"
 ```
 
-Use the returned book id to call book-specific routes, such as `/api/books/{bookId}/balances`.
+Use the returned book id to call book-specific routes, such as `/api/v1/books/{bookId}/balances`.
+
+## API evolution
+
+The public API is versioned under `/api/v1/*`. Keep existing `v1` routes stable for clients:
+
+- Prefer additive changes: new routes, new optional request fields, and new optional response fields.
+- Avoid breaking changes in `v1`: removing or renaming fields, changing field types, changing route behavior, or making optional inputs required.
+- Put breaking changes in a new version, such as `/api/v2/*`, while keeping `/api/v1/*` available until clients migrate.
+- Run `bun test` before deploy. The OpenAPI paths and schemas are snapshot-tested in `server/test/openapi.snapshot.json`; update that snapshot only after intentionally reviewing the API change.
 
 ## Learn More
 

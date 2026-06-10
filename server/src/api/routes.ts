@@ -17,7 +17,7 @@ type App = OpenAPIHono<AppEnv>;
 
 const pingRoute = createRoute({
     method: 'get',
-    path: '/api/ping',
+    path: '/api/v1/ping',
     tags: ['API'],
     summary: 'Ping app API',
     responses: {
@@ -27,7 +27,7 @@ const pingRoute = createRoute({
 
 const booksRoute = createRoute({
     method: 'get',
-    path: '/api/books',
+    path: '/api/v1/books',
     tags: ['API'],
     summary: 'List accessible books',
     description: 'Returns the books visible to the authenticated user.',
@@ -39,7 +39,7 @@ const booksRoute = createRoute({
 
 const bookBalancesRoute = createRoute({
     method: 'get',
-    path: '/api/books/{bookId}/balances',
+    path: '/api/v1/books/{bookId}/balances',
     tags: ['API'],
     summary: 'Get book account balances',
     request: {

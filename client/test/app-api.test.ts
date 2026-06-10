@@ -24,7 +24,7 @@ describe('createAppApi', () => {
 
         expect(books).toEqual([{ id: 'book-1', name: 'Main Book' }]);
         expect(requests).toHaveLength(1);
-        expect(requests[0].url).toBe('https://app.example.test/api/books');
+        expect(requests[0].url).toBe('https://app.example.test/api/v1/books');
         expect(requests[0].headers.get('Authorization')).toBe('Bearer token-123');
     });
 
@@ -48,7 +48,7 @@ describe('createAppApi', () => {
             book: { id: 'book 1', name: 'Main Book' },
             balances: [{ name: 'Cash', cumulativeBalanceText: '10.00' }],
         });
-        expect(requests[0].url).toBe('https://app.example.test/api/books/book%201/balances');
+        expect(requests[0].url).toBe('https://app.example.test/api/v1/books/book%201/balances');
     });
 
     it('throws a normalized API error', async () => {

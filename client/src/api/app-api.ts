@@ -83,7 +83,7 @@ export function createAppApi(options: AppApiOptions) {
 
     return {
         async ping(): Promise<PingResponse> {
-            const { data, error, response } = await client.GET('/api/ping');
+            const { data, error, response } = await client.GET('/api/v1/ping');
             if (error) {
                 throw toAppApiError(error, response);
             }
@@ -91,7 +91,7 @@ export function createAppApi(options: AppApiOptions) {
         },
 
         async getBooks(): Promise<BookSummary[]> {
-            const { data, error, response } = await client.GET('/api/books', {
+            const { data, error, response } = await client.GET('/api/v1/books', {
                 headers: getHeaders(),
             });
             if (error) {
@@ -101,7 +101,7 @@ export function createAppApi(options: AppApiOptions) {
         },
 
         async getBookBalances(bookId: string): Promise<BookBalancesResponse> {
-            const { data, error, response } = await client.GET('/api/books/{bookId}/balances', {
+            const { data, error, response } = await client.GET('/api/v1/books/{bookId}/balances', {
                 params: { path: { bookId } },
                 headers: getHeaders(),
             });

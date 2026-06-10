@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/ping": {
+    "/api/v1/ping": {
         parameters: {
             query?: never;
             header?: never;
@@ -40,7 +40,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/books": {
+    "/api/v1/books": {
         parameters: {
             query?: never;
             header?: never;
@@ -115,7 +115,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/books/{bookId}/balances": {
+    "/api/v1/books/{bookId}/balances": {
         parameters: {
             query?: never;
             header?: never;

@@ -172,7 +172,7 @@ export class MyApp extends LitElement {
                 <div class="section">
                     <h2>Server API example</h2>
                     <p class="note">
-                        These books are loaded through <code>/api/books</code> with a bearer token.
+                        These books are loaded through <code>/api/v1/books</code> with a bearer token.
                         The platform validates it before the app server calls Bkper with outbound
                         auth injection.
                     </p>

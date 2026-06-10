@@ -1,0 +1,277 @@
+{
+  "paths": {
+    "/api/v1/ping": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "summary": "Ping app API",
+        "responses": {
+          "200": {
+            "description": "API is reachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "summary": "List accessible books",
+        "description": "Returns the books visible to the authenticated user.",
+        "responses": {
+          "200": {
+            "description": "Accessible books",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BooksResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/books/{bookId}/balances": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "summary": "Get book account balances",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "book_123",
+              "description": "Bkper book ID"
+            },
+            "required": true,
+            "description": "Bkper book ID",
+            "name": "bookId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Book account balances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookBalancesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "schemas": {
+    "PingResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": true
+        },
+        "source": {
+          "type": "string",
+          "example": "my-app"
+        }
+      },
+      "required": [
+        "ok",
+        "source"
+      ]
+    },
+    "BooksResponse": {
+      "type": "object",
+      "properties": {
+        "books": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/BookSummary"
+          }
+        }
+      },
+      "required": [
+        "books"
+      ]
+    },
+    "BookSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "book_123"
+        },
+        "name": {
+          "type": "string",
+          "example": "Main Book"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1,
+              "example": "INTERNAL_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "An unexpected error occurred"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ]
+        }
+      },
+      "required": [
+        "success",
+        "error"
+      ]
+    },
+    "BookBalancesResponse": {
+      "type": "object",
+      "properties": {
+        "book": {
+          "$ref": "#/components/schemas/BookSummary"
+        },
+        "balances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/BalanceContainer"
+          }
+        }
+      },
+      "required": [
+        "book",
+        "balances"
+      ]
+    },
+    "BalanceContainer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Cash"
+        },
+        "cumulativeBalanceText": {
+          "type": "string",
+          "example": "1,234.56"
+        }
+      },
+      "required": [
+        "name",
+        "cumulativeBalanceText"
+      ]
+    }
+  }
+}
