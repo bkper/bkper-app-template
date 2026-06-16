@@ -136,6 +136,16 @@ This runs:
 - `vite dev` — client dev server with HMR
 - `bkper app dev` — one Miniflare Worker and an event tunnel to the same Worker when events are configured
 
+## Verification
+
+Before considering a code change complete, run the deterministic root check:
+
+```bash
+bun run check
+```
+
+This regenerates derived API/environment types, typechecks and tests the app against them, verifies production builds, checks formatting, and fails if tracked generated files are stale.
+
 ## Build and deploy
 
 ```bash

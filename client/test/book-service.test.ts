@@ -7,7 +7,10 @@ function createAppApiStub(overrides: Partial<AppApi> = {}): AppApi {
     return {
         ping: async () => ({ ok: true, source: 'test' }),
         getBooks: async () => [],
-        getBookBalances: async bookId => ({ book: { id: bookId, name: 'Test Book' }, balances: [] }),
+        getBookBalances: async bookId => ({
+            book: { id: bookId, name: 'Test Book' },
+            balances: [],
+        }),
         ...overrides,
     };
 }

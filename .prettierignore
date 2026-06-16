@@ -1,0 +1,8 @@
+# Human-authored docs
+*.md
+
+# Generated files
+client/src/api/generated/
+env.d.ts
+.dev.vars.example
+server/test/openapi.snapshot.json

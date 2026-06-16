@@ -31,7 +31,7 @@ function createBkperStub(overrides: Partial<Bkper> = {}): Bkper {
     return {
         getBooks: async () => [],
         getBook: async bookId => createBookStub({ id: bookId, name: 'Test Book' }),
-        getConfig: () => ({} satisfies Config),
+        getConfig: () => ({}) satisfies Config,
         ...overrides,
     } as unknown as Bkper;
 }
