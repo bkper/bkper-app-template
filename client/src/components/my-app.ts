@@ -165,11 +165,15 @@ export class MyApp extends LitElement {
                         <p class="subtitle">Select a book to continue</p>
                     </div>
 
-                    ${state.books.length === 0
-                        ? this.renderCallout('No books found')
-                        : html`
-                              <div class="book-list">${state.books.map(this.renderBookButton)}</div>
-                          `}
+                    ${
+                        state.books.length === 0
+                            ? this.renderCallout('No books found')
+                            : html`
+                                  <div class="book-list">
+                                      ${state.books.map(this.renderBookButton)}
+                                  </div>
+                              `
+                    }
                 </wa-card>
 
                 <wa-card appearance="outlined">
@@ -182,15 +186,17 @@ export class MyApp extends LitElement {
                         </p>
                     </div>
 
-                    ${state.serverBooksError
-                        ? this.renderCallout(state.serverBooksError, 'danger')
-                        : state.serverBooks.length === 0
-                          ? this.renderCallout('No books returned by server API')
-                          : html`
-                                <div class="book-list">
-                                    ${state.serverBooks.map(this.renderBookButton)}
-                                </div>
-                            `}
+                    ${
+                        state.serverBooksError
+                            ? this.renderCallout(state.serverBooksError, 'danger')
+                            : state.serverBooks.length === 0
+                              ? this.renderCallout('No books returned by server API')
+                              : html`
+                                    <div class="book-list">
+                                        ${state.serverBooks.map(this.renderBookButton)}
+                                    </div>
+                                `
+                    }
                 </wa-card>
             </div>
         `;
@@ -207,24 +213,28 @@ export class MyApp extends LitElement {
                     <div slot="header" class="panel-header">
                         <p class="eyebrow">Book balances</p>
                         <h1>
-                            ${state.selectedBookError
-                                ? 'Could not load selected book'
-                                : (state.bookName ?? 'Selected book')}
+                            ${
+                                state.selectedBookError
+                                    ? 'Could not load selected book'
+                                    : (state.bookName ?? 'Selected book')
+                            }
                         </h1>
                         <p class="subtitle">
                             ${state.selectedBookError ? state.bookId : 'Accounts'}
                         </p>
                     </div>
 
-                    ${state.selectedBookError
-                        ? this.renderCallout(state.selectedBookError, 'danger')
-                        : state.balanceContainers.length === 0
-                          ? this.renderCallout('No accounts found')
-                          : html`
-                                <div class="balance-list">
-                                    ${state.balanceContainers.map(this.renderBalanceRow)}
-                                </div>
-                            `}
+                    ${
+                        state.selectedBookError
+                            ? this.renderCallout(state.selectedBookError, 'danger')
+                            : state.balanceContainers.length === 0
+                              ? this.renderCallout('No accounts found')
+                              : html`
+                                    <div class="balance-list">
+                                        ${state.balanceContainers.map(this.renderBalanceRow)}
+                                    </div>
+                                `
+                    }
                 </wa-card>
             </div>
         `;

@@ -67,7 +67,26 @@ client/src/
 
 Keep components focused on rendering and user intent. Register only the Web Awesome components used by the template in `web-awesome.ts`, and style with `@bkper/web-design` tokens. Put auth mechanics in `auth/`, Bkper/client API calls in `services/` and `api/`, and page loading/navigation flow in `app/`.
 
-This template registers Web Awesome's Agent Skill for Pi in `.pi/settings.json`. The skill is provided by `@awesome.me/webawesome` after `bun install` at `client/node_modules/@awesome.me/webawesome/dist/skills/webawesome`. If another agent harness is used, register that local skill path when it supports Agent Skills, or read that `SKILL.md` and its references before making Web Awesome UI changes. Do not vendor-copy the skill unless the harness cannot reference local skills.
+## UI grounding
+
+Web Awesome official Agent Skills are generated resources synced from the installed `@awesome.me/webawesome` package by running:
+
+```bash
+bun run agent:skills
+```
+
+Before UI work, agents must read:
+
+- `.agents/skills/webawesome/SKILL.md`
+- `.agents/skills/webawesome-design/SKILL.md`
+
+Preserve the template UI foundation:
+
+- Use Web Awesome components as the primary UI building blocks.
+- Style with `@bkper/web-design` tokens instead of ad-hoc design constants.
+- Keep the first-paint dark mode script in `client/index.html` before `/src/index.ts`.
+- Keep the client/server layering described above.
+- Keep the typed API/OpenAPI workflow: update schemas/routes/tests, run `bun run api`, and review the OpenAPI snapshot for public contract changes.
 
 Server code is layered so template users can see where each concern belongs:
 

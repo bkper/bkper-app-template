@@ -5,6 +5,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# Generated agent skills
+.agents/skills/webawesome/
+.agents/skills/webawesome-design/
+
 # Lockfile - ignored so apps scaffolded from this template resolve current compatible dependencies
 bun.lock
 # bun.lockb (old binary format, no longer used)
