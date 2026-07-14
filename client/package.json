@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@awesome.me/webawesome": "latest",
-        "@bkper/web-auth": "latest",
+        "@bkper/web-auth": "^1.1.0",
         "@bkper/web-design": "latest",
         "bkper-js": "latest",
         "lit": "^3.3.2",

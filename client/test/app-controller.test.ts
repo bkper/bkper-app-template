@@ -27,9 +27,11 @@ class TestHost implements ReactiveControllerHost {
 
 function createAuth(): AuthSession {
     return {
+        authenticatedFetch: async () => new Response(),
         getAccessToken: () => 'token-123',
         init: async () => undefined,
         login: () => undefined,
+        refresh: async () => undefined,
     };
 }
 
@@ -100,9 +102,11 @@ describe('AppController', () => {
         const controller = new AppController(host, {
             getSearch: () => '',
             createAuthSession: () => ({
+                authenticatedFetch: async () => new Response(),
                 getAccessToken: () => 'token-123',
                 init: async () => undefined,
                 login: () => undefined,
+                refresh: async () => undefined,
             }),
             createBookService: () => createBookService(),
             logger: { error: () => undefined },

@@ -1,10 +1,12 @@
 import { BkperAuth, type BkperAuthConfig } from '@bkper/web-auth';
 
-export interface AccessTokenProvider {
+export interface AuthProvider {
+    authenticatedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
     getAccessToken(): string | undefined;
+    refresh(): Promise<void>;
 }
 
-export interface AuthClient extends AccessTokenProvider {
+export interface AuthClient extends AuthProvider {
     init(): Promise<void>;
     login(): void;
 }
@@ -27,7 +29,7 @@ export interface AuthSessionOptions extends AuthSessionCallbacks {
 }
 
 // AUTH PATTERN: @bkper/web-auth handles OAuth, token refresh, and redirects.
-// Keep that concern here so components and services only depend on getAccessToken().
+// Keep those operations behind this small provider boundary for client services.
 export function createAuthSession(options: AuthSessionOptions = {}): AuthSession {
     return new BkperAuthSession(options);
 }
@@ -53,6 +55,10 @@ class BkperAuthSession implements AuthSession {
         });
     }
 
+    authenticatedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+        return this.client.authenticatedFetch(input, init);
+    }
+
     getAccessToken(): string | undefined {
         return this.client.getAccessToken();
     }
@@ -63,6 +69,10 @@ class BkperAuthSession implements AuthSession {
 
     login(): void {
         this.client.login();
+    }
+
+    refresh(): Promise<void> {
+        return this.client.refresh();
     }
 }
 

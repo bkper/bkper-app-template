@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { createBookService } from '../src/services/book-service';
+import { createBkperClientConfig, createBookService } from '../src/services/book-service';
 import type { AppApi } from '../src/api/app-api';
 import type { BrowserBkperClient } from '../src/services/book-service';
 
@@ -16,6 +16,50 @@ function createAppApiStub(overrides: Partial<AppApi> = {}): AppApi {
 }
 
 describe('createBookService', () => {
+    it('wires token refresh into the bkper-js client config', async () => {
+        let refreshCalls = 0;
+        const config = createBkperClientConfig({
+            authenticatedFetch: async () => new Response(),
+            getAccessToken: () => 'token-123',
+            refresh: async () => {
+                refreshCalls += 1;
+            },
+        });
+
+        await expect(config.oauthTokenProvider?.()).resolves.toBe('token-123');
+        await config.requestRetryHandler?.(403, undefined, 1);
+        await config.requestRetryHandler?.(403, undefined, 2);
+        await config.requestRetryHandler?.(500, undefined, 1);
+
+        expect(refreshCalls).toBe(1);
+    });
+
+    it('uses authenticated fetch for server API requests', async () => {
+        const requests: Request[] = [];
+        const service = createBookService({
+            auth: {
+                authenticatedFetch: async input => {
+                    requests.push(new Request(input));
+                    return new Response(
+                        JSON.stringify({ books: [{ id: 'book-1', name: 'Main Book' }] }),
+                        { headers: { 'content-type': 'application/json' } }
+                    );
+                },
+                getAccessToken: () => 'token-123',
+                refresh: async () => undefined,
+            },
+            bkper: {
+                getUser: async () => ({ getName: () => 'Ada', getFullName: () => 'Ada' }),
+                getBooks: async () => [],
+            },
+        });
+
+        await expect(service.listBooksFromServer()).resolves.toEqual([
+            { id: 'book-1', name: 'Main Book' },
+        ]);
+        expect(requests[0].url).toBe('http://localhost:5173/api/v1/books');
+    });
+
     it('maps bkper-js user and books into component-ready data', async () => {
         const bkper: BrowserBkperClient = {
             getUser: async () => ({
@@ -29,7 +73,11 @@ describe('createBookService', () => {
         };
 
         const service = createBookService({
-            accessTokenProvider: { getAccessToken: () => 'token-123' },
+            auth: {
+                authenticatedFetch: async () => new Response(),
+                getAccessToken: () => 'token-123',
+                refresh: async () => undefined,
+            },
             bkper,
             appApi: createAppApiStub(),
         });
@@ -45,7 +93,11 @@ describe('createBookService', () => {
 
     it('keeps server API data behind the service contract', async () => {
         const service = createBookService({
-            accessTokenProvider: { getAccessToken: () => 'token-123' },
+            auth: {
+                authenticatedFetch: async () => new Response(),
+                getAccessToken: () => 'token-123',
+                refresh: async () => undefined,
+            },
             bkper: {
                 getUser: async () => ({ getName: () => 'Ada', getFullName: () => 'Ada Lovelace' }),
                 getBooks: async () => [],

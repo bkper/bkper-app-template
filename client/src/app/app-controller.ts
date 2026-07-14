@@ -1,7 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import {
     createAuthSession,
-    type AccessTokenProvider,
+    type AuthProvider,
     type AuthSession,
     type AuthSessionCallbacks,
 } from '../auth/auth-session';
@@ -10,7 +10,7 @@ import { createInitialAppState, type AppState } from './app-state';
 
 export interface AppControllerOptions {
     createAuthSession?: (callbacks: AuthSessionCallbacks) => AuthSession;
-    createBookService?: (accessTokenProvider: AccessTokenProvider) => BookService;
+    createBookService?: (auth: AuthProvider) => BookService;
     getSearch?: () => string;
     navigate?: (href: string) => void;
     logger?: Pick<Console, 'error'>;
@@ -40,8 +40,7 @@ export class AppController implements ReactiveController {
 
         const authFactory = options.createAuthSession ?? createAuthSession;
         const bookServiceFactory =
-            options.createBookService ??
-            (accessTokenProvider => createBookService({ accessTokenProvider }));
+            options.createBookService ?? (auth => createBookService({ auth }));
 
         this.auth = authFactory({
             onLoginSuccess: () => this.loadData(),

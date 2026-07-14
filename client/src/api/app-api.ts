@@ -1,5 +1,4 @@
 import createClient from 'openapi-fetch';
-import { createBearerAuthHeaders } from './auth-headers';
 import type {
     BalanceContainer,
     BookBalancesResponse,
@@ -13,9 +12,8 @@ export type { BalanceContainer, BookBalancesResponse, BookSummary, PingResponse 
 export type ApiErrorResponse = ErrorResponse;
 
 export interface AppApiOptions {
-    getAccessToken: () => string | undefined;
     baseUrl?: string;
-    fetch?: (input: Request) => Promise<Response>;
+    fetch: (input: Request) => Promise<Response>;
 }
 
 export class AppApiError extends Error {
@@ -79,8 +77,6 @@ export function createAppApi(options: AppApiOptions) {
         fetch: options.fetch,
     });
 
-    const getHeaders = () => createBearerAuthHeaders(options.getAccessToken());
-
     return {
         async ping(): Promise<PingResponse> {
             const { data, error, response } = await client.GET('/api/v1/ping');
@@ -91,9 +87,7 @@ export function createAppApi(options: AppApiOptions) {
         },
 
         async getBooks(): Promise<BookSummary[]> {
-            const { data, error, response } = await client.GET('/api/v1/books', {
-                headers: getHeaders(),
-            });
+            const { data, error, response } = await client.GET('/api/v1/books');
             if (error) {
                 throw toAppApiError(error, response);
             }
@@ -103,7 +97,6 @@ export function createAppApi(options: AppApiOptions) {
         async getBookBalances(bookId: string): Promise<BookBalancesResponse> {
             const { data, error, response } = await client.GET('/api/v1/books/{bookId}/balances', {
                 params: { path: { bookId } },
-                headers: getHeaders(),
             });
             if (error) {
                 throw toAppApiError(error, response);

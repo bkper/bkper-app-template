@@ -37,8 +37,8 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 
 | Context               | Pattern                                                                                                               | Location                          |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Web client direct API | `@bkper/web-auth` in `auth/` → `auth.getAccessToken()` → `services/` using `bkper-js`                                  | `client/src/auth/auth-session.ts`, `client/src/services/book-service.ts` |
-| Client app API calls  | Any browser, script, or agent sends `Authorization: Bearer <token>` to `/api/v1/*`; the shipped client uses the typed API client | `client/src/api/app-api.ts`       |
+| Web client direct API | `@bkper/web-auth` provides the token and refresh operation configured in `bkper-js`                                   | `client/src/auth/auth-session.ts`, `client/src/services/book-service.ts` |
+| Client app API calls  | The typed API client uses `auth.authenticatedFetch()`; other callers send `Authorization: Bearer <token>` to `/api/v1/*` | `client/src/api/app-api.ts`       |
 | Server API routes     | Platform validates bearer auth and injects auth for server-side `new Bkper()` calls                                    | `server/src/api/routes.ts`        |
 | Event handlers        | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection                                    | `server/src/events/routes.ts`     |
 | Local dev             | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`)                                | `client/vite.config.ts`, `bkper app dev` |

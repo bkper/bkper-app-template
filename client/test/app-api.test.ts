@@ -9,11 +9,10 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 describe('createAppApi', () => {
-    it('loads books with bearer auth', async () => {
+    it('loads books through the provided fetch implementation', async () => {
         const requests: Request[] = [];
         const api = createAppApi({
             baseUrl: 'https://app.example.test',
-            getAccessToken: () => ' token-123 ',
             fetch: async request => {
                 requests.push(request);
                 return jsonResponse({ books: [{ id: 'book-1', name: 'Main Book' }] });
@@ -25,14 +24,12 @@ describe('createAppApi', () => {
         expect(books).toEqual([{ id: 'book-1', name: 'Main Book' }]);
         expect(requests).toHaveLength(1);
         expect(requests[0].url).toBe('https://app.example.test/api/v1/books');
-        expect(requests[0].headers.get('Authorization')).toBe('Bearer token-123');
     });
 
     it('loads book balances using a typed path parameter', async () => {
         const requests: Request[] = [];
         const api = createAppApi({
             baseUrl: 'https://app.example.test',
-            getAccessToken: () => 'token-123',
             fetch: async request => {
                 requests.push(request);
                 return jsonResponse({
@@ -54,7 +51,6 @@ describe('createAppApi', () => {
     it('throws a normalized API error', async () => {
         const api = createAppApi({
             baseUrl: 'https://app.example.test',
-            getAccessToken: () => 'token-123',
             fetch: async () =>
                 jsonResponse(
                     {

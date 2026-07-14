@@ -7,9 +7,11 @@ describe('createAuthSession', () => {
     it('uses the app origin for local development auth', () => {
         let capturedConfig: BkperAuthConfig | undefined;
         const client: AuthClient = {
+            authenticatedFetch: async () => new Response(),
             getAccessToken: () => 'token-123',
             init: async () => undefined,
             login: () => undefined,
+            refresh: async () => undefined,
         };
 
         const session = createAuthSession({
@@ -33,11 +35,13 @@ describe('createAuthSession', () => {
             createClient: config => {
                 capturedConfig = config;
                 return {
+                    authenticatedFetch: async () => new Response(),
                     getAccessToken: () => undefined,
                     init: async () => undefined,
                     login: () => {
                         loginCalls += 1;
                     },
+                    refresh: async () => undefined,
                 };
             },
         });
@@ -46,6 +50,33 @@ describe('createAuthSession', () => {
 
         expect(capturedConfig?.baseUrl).toBeUndefined();
         expect(loginCalls).toBe(1);
+    });
+
+    it('delegates authenticated requests and token refresh', async () => {
+        const requests: Request[] = [];
+        let refreshCalls = 0;
+        const session = createAuthSession({
+            location: { hostname: 'my-app.bkper.app', origin: 'https://my-app.bkper.app' },
+            createClient: () => ({
+                authenticatedFetch: async input => {
+                    requests.push(new Request(input));
+                    return new Response(null, { status: 204 });
+                },
+                getAccessToken: () => 'token-123',
+                init: async () => undefined,
+                login: () => undefined,
+                refresh: async () => {
+                    refreshCalls += 1;
+                },
+            }),
+        });
+
+        const response = await session.authenticatedFetch('https://api.bkper.app/v5/resource');
+        await session.refresh();
+
+        expect(response.status).toBe(204);
+        expect(requests[0].url).toBe('https://api.bkper.app/v5/resource');
+        expect(refreshCalls).toBe(1);
     });
 });
 
