@@ -10,6 +10,47 @@
 
 [Step-by-step instructions for end users. How do they access the app? What do they see? What actions can they take?]
 
+## Source control and deployment
+
+After `bkper app init`, customize the App, then create the first commit on `main`:
+
+```bash
+git add .
+git commit -m "Initial app"
+bkper app sync
+```
+
+If that sync creates the App, this is a standalone Git root, and no remote exists, Bkper selects private managed source and uploads the committed `main` branch. Add a GitHub, GitLab, or other provider remote **before the first sync** to keep external source instead.
+
+Existing Apps, repositories with an external remote, and Apps nested in monorepos are never migrated automatically. The CLI never modifies an existing external remote.
+
+Source storage and deployment are separate:
+
+- `git push` only updates source and never deploys.
+- `bun run build` builds locally.
+- `bkper app deploy` explicitly uploads the existing local build.
+- For managed source, sync/deploy require a clean committed attached branch and use fast-forward-only CLI pushes. Bkper verifies that the exact commit exists remotely, but does not claim that the local bundle was reproducibly built from it.
+
+Clone an existing managed App without executing its repository code, then install explicitly:
+
+```bash
+bkper app clone <appId> [path]
+cd <path-or-appId>
+bun install
+```
+
+If managed Git authentication fails, run `bkper auth login` and retry. Credentials are short-lived and are not persisted by Bkper. Configured App developers, including domain-pattern developers, can read and modify private managed source.
+
+To redeploy older source, keep `HEAD` attached to an ordinary rollback branch:
+
+```bash
+git switch -c rollback/<name> <older-commit>
+bun run build
+bkper app deploy --preview
+# verify, then optionally:
+bkper app deploy
+```
+
 ## API access
 
 This app also exposes an API so the web client, scripts, and other authenticated clients can use the same app behavior.

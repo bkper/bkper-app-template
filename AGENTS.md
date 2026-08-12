@@ -30,6 +30,9 @@ After running `bkper app init`, customize:
 1. `bkper.yaml` identity and ownership fields
 2. Logos in `client/public/images/`
 3. `README.md` for end users, including the app's API base URL and `/openapi.json` link
+4. Commit the customized App on `main`, then run `bkper app sync`
+
+The first sync selects private Bkper-managed source only when that same sync creates an eligible standalone App and no Git remote exists. Add an external provider remote before first sync to opt out. Existing Apps, external remotes, and monorepos are preserved and never migrated automatically.
 
 ## Authentication
 
@@ -168,9 +171,13 @@ This regenerates derived API/environment types, typechecks and tests the app aga
 ## Build and deploy
 
 ```bash
-bun run deploy:preview # preview deployment
-bun run deploy         # production deployment
+bun run deploy:preview # local build + explicit preview deployment
+bun run deploy         # local build + explicit production deployment
 ```
+
+Git push never deploys. Managed sync/deploy safely push a clean committed attached branch and deployment verifies that exact remote commit before uploading the existing local build. This is best-effort source provenance, not reproducible remote CI. External and monorepo workflows retain direct upload behavior.
+
+For a managed rollback, create an attached `rollback/<name>` branch at the selected commit, build locally, and deploy explicitly. To clone managed source, run `bkper app clone <appId> [path]`, enter the clone, and run `bun install`; clone never executes repository lifecycle scripts.
 
 Build output:
 
