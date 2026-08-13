@@ -18,19 +18,6 @@ Treat the app API as a first-class product surface:
 
 When adding API behavior, update the server schema and route, add or update unit tests, regenerate the typed client API types with `bun run api`, and intentionally update the OpenAPI snapshot when the public contract changes.
 
-## Post-init checklist
-
-After running `bkper app init`:
-
-1. Read the newly created `AGENTS.md` before making changes.
-2. Preserve this standards section unless explicitly asked to change it, maintain the app-specific section, and preserve both marker pairs.
-3. Customize `bkper.yaml` identity and ownership fields.
-4. Replace the logos in `client/public/images/`.
-5. Update `README.md` for end users, including the app's API base URL and `/openapi.json` link.
-6. Commit the customized App on `main`, then run `bkper app sync`.
-
-The first sync selects private Bkper-managed source only when that same sync creates an eligible standalone App and no Git remote exists. Add an external provider remote before first sync to opt out. Existing Apps, external remotes, and monorepos are preserved and never migrated automatically.
-
 ## Authentication
 
 Do not implement custom OAuth flows, redirect handling, or token refresh.
@@ -59,7 +46,7 @@ Web Awesome official Agent Skills are generated resources synced from the instal
 bun run agent:skills
 ```
 
-Before UI work, agents must read:
+Before UI work, agents MUST read:
 
 - `.agents/skills/webawesome/SKILL.md`
 - `.agents/skills/webawesome-design/SKILL.md`
