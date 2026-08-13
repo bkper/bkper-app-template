@@ -1,12 +1,7 @@
-# My Bkper App
+<!-- APP_STANDARDS:START -->
+# Bkper App Standards
 
-## Overview
-
-A Bkper app using the single Worker platform model:
-
-- **Client**: Lit + Web Awesome book picker and accounts list with balances, layered into component, controller, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`)
-- **Server**: Hono Worker serving typed OpenAPI `/api/v1/*` routes and `/events`
-- **Events**: Creates a 20% draft transaction on `TRANSACTION_CHECKED`
+This section contains reusable architecture and quality guidance. It is editable, but preserve it by default and change it only when explicitly requested. Never replace this file wholesale merely to specialize the app. Preserve both guidance marker pairs and maintain the app-specific section as the app evolves.
 
 ## Architecture principles
 
@@ -23,14 +18,16 @@ Treat the app API as a first-class product surface:
 
 When adding API behavior, update the server schema and route, add or update unit tests, regenerate the typed client API types with `bun run api`, and intentionally update the OpenAPI snapshot when the public contract changes.
 
-## Post-Init Checklist
+## Post-init checklist
 
-After running `bkper app init`, customize:
+After running `bkper app init`:
 
-1. `bkper.yaml` identity and ownership fields
-2. Logos in `client/public/images/`
-3. `README.md` for end users, including the app's API base URL and `/openapi.json` link
-4. Commit the customized App on `main`, then run `bkper app sync`
+1. Read the newly created `AGENTS.md` before making changes.
+2. Preserve this standards section unless explicitly asked to change it, maintain the app-specific section, and preserve both marker pairs.
+3. Customize `bkper.yaml` identity and ownership fields.
+4. Replace the logos in `client/public/images/`.
+5. Update `README.md` for end users, including the app's API base URL and `/openapi.json` link.
+6. Commit the customized App on `main`, then run `bkper app sync`.
 
 The first sync selects private Bkper-managed source only when that same sync creates an eligible standalone App and no Git remote exists. Add an external provider remote before first sync to opt out. Existing Apps, external remotes, and monorepos are preserved and never migrated automatically.
 
@@ -46,29 +43,13 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 | Event handlers        | Platform routes `/events`; handler uses `new Bkper()` with outbound auth injection                                    | `server/src/events/routes.ts`     |
 | Local dev             | Vite client auth and local outbound both use your CLI credentials (`bkper auth login`)                                | `client/vite.config.ts`, `bkper app dev` |
 
-## Structure
-
-```
-client/  — Frontend UI package (Vite + Lit) with browser-only dependencies
-server/  — Hono Worker package for /api/v1/* and /events with server/runtime dependencies
-```
+## Project structure
 
 The root package orchestrates install, dev, test, build, and deploy. Keep browser UI dependencies in `client/package.json`, Worker dependencies in `server/package.json`, and root dependencies limited to cross-package tooling such as the Bkper CLI, Miniflare, and OpenAPI generation.
 
-Client code is intentionally small but layered so template users see where each concern belongs:
+Keep components focused on rendering and user intent. Register only the Web Awesome components used by the app in `web-awesome.ts`, and style with `@bkper/web-design` tokens. Put auth mechanics in `auth/`, Bkper/client API calls in `services/` and `api/`, and page loading/navigation flow in `app/`.
 
-```
-client/src/
-├── index.ts      — Browser entrypoint
-├── web-awesome.ts — Web Awesome component registration for the client UI
-├── components/   — Lit presentation components only
-├── app/          — UI state and lifecycle orchestration
-├── auth/         — @bkper/web-auth session boundary
-├── services/     — App use cases and bkper-js orchestration
-└── api/          — Typed /api/v1 client and generated OpenAPI types
-```
-
-Keep components focused on rendering and user intent. Register only the Web Awesome components used by the template in `web-awesome.ts`, and style with `@bkper/web-design` tokens. Put auth mechanics in `auth/`, Bkper/client API calls in `services/` and `api/`, and page loading/navigation flow in `app/`.
+Keep server route handlers thin. Put API shape and validation in `api/`, event transport concerns in `events/`, and business behavior in `services/`.
 
 ## UI grounding
 
@@ -90,18 +71,6 @@ Preserve the template UI foundation:
 - Keep the first-paint dark mode script in `client/index.html` before `/src/index.ts`.
 - Keep the client/server layering described above.
 - Keep the typed API/OpenAPI workflow: update schemas/routes/tests, run `bun run api`, and review the OpenAPI snapshot for public contract changes.
-
-Server code is layered so template users can see where each concern belongs:
-
-```
-server/src/
-├── index.ts      — Worker composition, middleware, health, static assets
-├── api/          — HTTP API routes, OpenAPI schemas, API error responses
-├── events/       — Bkper event ingress, dispatch, and event adapters
-└── services/     — App behavior and Bkper SDK orchestration
-```
-
-Keep route handlers thin. Put API shape and validation in `api/`, event transport concerns in `events/`, and business behavior in `services/`.
 
 ## API contract
 
@@ -166,7 +135,7 @@ Before considering a code change complete, run the deterministic root check:
 bun run check
 ```
 
-This regenerates derived API/environment types, typechecks and tests the app against them, verifies production builds, checks formatting, and fails if tracked generated files are stale.
+This first validates the guidance markers, then regenerates derived API/environment types, typechecks and tests the app against them, verifies production builds, checks formatting, and fails if tracked generated files are stale.
 
 ## Build and deploy
 
@@ -184,6 +153,71 @@ Build output:
 - OpenAPI client types → `client/src/api/generated/types.d.ts`
 - Vite client build → `dist/client/`
 - Worker bundle → `dist/server/`
+<!-- APP_STANDARDS:END -->
+
+<!-- APP_SPECIFICS:START -->
+# My Bkper App
+
+## Overview
+
+A Bkper app using the single Worker platform model:
+
+- **Client**: Lit + Web Awesome book picker and accounts list with balances, layered into component, controller, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`).
+- **Server**: Hono Worker serving typed OpenAPI `/api/v1/*` routes and `/events`.
+- **Events**: Creates a 20% draft transaction on `TRANSACTION_CHECKED`.
+
+## Starter behavior and domain flow
+
+The starter demonstrates one balanced resource movement without changing balances until a person posts the resulting draft:
+
+1. Bkper sends a `TRANSACTION_CHECKED` event to `/events`.
+2. The handler ignores events produced by this app and events without a posted transaction, nonzero amount, date, source Account, and destination Account.
+3. The service calculates 20% of the checked amount and creates a draft moving that amount from the original source Account to the original destination Account on the same date.
+4. The draft remains available for human review and does not affect Book balances until posted.
+
+The client lets the authenticated user select an accessible Book and view its Accounts and balances.
+
+## Resources and routes
+
+| Resource or behavior | Route or implementation |
+| -------------------- | ----------------------- |
+| API health/ping | `GET /api/v1/ping` |
+| Accessible Books | `GET /api/v1/books` |
+| Account balances for a Book | `GET /api/v1/books/{bookId}/balances` |
+| OpenAPI contract | `GET /openapi.json` |
+| Checked transaction events | `POST /events` |
+| Static client | Worker fallback backed by the `ASSETS` binding |
+| Platform storage | `KV` service binding |
+
+## Current implementation structure
+
+```text
+client/  — Frontend UI package (Vite + Lit) with browser-only dependencies
+server/  — Hono Worker package for /api/v1/* and /events with server/runtime dependencies
+```
+
+Client code is intentionally small but layered so template users see where each concern belongs:
+
+```text
+client/src/
+├── index.ts       — Browser entrypoint
+├── web-awesome.ts — Web Awesome component registration for the client UI
+├── components/    — Lit presentation components only
+├── app/           — UI state and lifecycle orchestration
+├── auth/          — @bkper/web-auth session boundary
+├── services/      — App use cases and bkper-js orchestration
+└── api/           — Typed /api/v1 client and generated OpenAPI types
+```
+
+Server code is layered so template users can see where each concern belongs:
+
+```text
+server/src/
+├── index.ts      — Worker composition, middleware, health, static assets
+├── api/          — HTTP API routes, OpenAPI schemas, API error responses
+├── events/       — Bkper event ingress, dispatch, and event adapters
+└── services/     — App behavior and Bkper SDK orchestration
+```
 
 ## Configuration
 
@@ -213,3 +247,4 @@ deployment:
 | Regenerate API types       | `bun run api`                                                   |
 | Handle events              | `server/src/events/routes.ts` and `server/src/events/handlers/` |
 | Configure app              | `bkper.yaml`                                                    |
+<!-- APP_SPECIFICS:END -->
