@@ -3,10 +3,10 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "clean": "rm -rf node_modules dist",
+        "clean": "rimraf node_modules dist",
         "dev": "vite dev",
         "build": "vite build",
-        "test": "bun test --preload ./test/setup-dom.ts",
+        "test": "vitest run",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { AppController } from '../src/app/app-controller';
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { AuthSession, AuthSessionCallbacks } from '../src/auth/auth-session';

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { AppApiError, createAppApi } from '../src/api/app-api';
 
 function jsonResponse(body: unknown, status = 200): Response {

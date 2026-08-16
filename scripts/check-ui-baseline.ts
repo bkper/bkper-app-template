@@ -67,7 +67,7 @@ function missingSkillMessage(relativePath: string): string {
         `Missing ${relativePath}`,
         '',
         'Run:',
-        '  bun run agent:skills',
+        '  npm run agent:skills',
         '',
         'Agents changing UI should load:',
         '  .agents/skills/webawesome/SKILL.md',

@@ -12,7 +12,14 @@
 
 ## Source control and deployment
 
-After `bkper app init`, customize the App, then create the first commit on `main`:
+After `bkper app init`, install dependencies once and start local development:
+
+```bash
+npm install
+npm run dev
+```
+
+Once customized, stop the development servers and create the first commit on `main`:
 
 ```bash
 git add .
@@ -27,7 +34,7 @@ Existing Apps, repositories with an external remote, and Apps nested in monorepo
 Source storage and deployment are separate:
 
 - `git push` only updates source and never deploys.
-- `bun run build` builds locally.
+- `npm run build` builds locally.
 - `bkper app deploy` explicitly uploads the existing local build.
 - For managed source, sync/deploy require a clean committed attached branch and use fast-forward-only CLI pushes. Bkper verifies that the exact commit exists remotely, but does not claim that the local bundle was reproducibly built from it.
 
@@ -36,7 +43,7 @@ Clone an existing managed App without executing its repository code, then instal
 ```bash
 bkper app clone <appId> [path]
 cd <path-or-appId>
-bun install
+npm install
 ```
 
 If managed Git authentication fails, run `bkper auth login` and retry. Credentials are short-lived and are not persisted by Bkper. Configured App developers, including domain-pattern developers, can read and modify private managed source.
@@ -45,7 +52,7 @@ To redeploy older source, keep `HEAD` attached to an ordinary rollback branch:
 
 ```bash
 git switch -c rollback/<name> <older-commit>
-bun run build
+npm run build
 bkper app deploy --preview
 # verify, then optionally:
 bkper app deploy
@@ -92,7 +99,7 @@ The public API is versioned under `/api/v1/*` and documented in one canonical sp
 - Keep existing schema names stable. Do not rename or version schemas just for additive changes.
 - Avoid breaking changes in `v1`: removing or renaming fields, changing field types or meaning, changing route behavior, narrowing accepted input, or making optional inputs required.
 - Put breaking changes in a new version, such as `/api/v2/*`, while keeping `/api/v1/*` and its schemas available for existing clients.
-- Run `bun test` before deploy. The OpenAPI paths and schemas are snapshot-tested in `server/test/openapi.snapshot.json`; update that snapshot only after intentionally reviewing the API change.
+- Run `npm test` before deploy. The OpenAPI paths and schemas are snapshot-tested in `server/test/openapi.snapshot.json`; update that snapshot only after intentionally reviewing the API change.
 
 ## Learn More
 

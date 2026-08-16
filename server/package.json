@@ -3,8 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "clean": "rm -rf node_modules dist",
-        "test": "bun test",
+        "clean": "rimraf node_modules dist",
+        "test": "vitest run",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {

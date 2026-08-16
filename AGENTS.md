@@ -16,7 +16,7 @@ Treat the app API as a first-class product surface:
 - Keep Lit components focused on rendering and user intent. Do not hide app behavior only in UI components.
 - Prefer adding meaning with typed request/response schemas and properties before adding new structural layers.
 
-When adding API behavior, update the server schema and route, add or update unit tests, regenerate the typed client API types with `bun run api`, and intentionally update the OpenAPI snapshot when the public contract changes.
+When adding API behavior, update the server schema and route, add or update unit tests, regenerate the typed client API types with `npm run api`, and intentionally update the OpenAPI snapshot when the public contract changes.
 
 ## Authentication
 
@@ -43,7 +43,7 @@ Keep server route handlers thin. Put API shape and validation in `api/`, event t
 Web Awesome official Agent Skills are generated resources synced from the installed `@awesome.me/webawesome` package by running:
 
 ```bash
-bun run agent:skills
+npm run agent:skills
 ```
 
 Before UI work, agents MUST read:
@@ -57,7 +57,7 @@ Preserve the template UI foundation:
 - Style with `@bkper/web-design` tokens instead of ad-hoc design constants.
 - Keep the first-paint dark mode script in `client/index.html` before `/src/index.ts`.
 - Keep the client/server layering described above.
-- Keep the typed API/OpenAPI workflow: update schemas/routes/tests, run `bun run api`, and review the OpenAPI snapshot for public contract changes.
+- Keep the typed API/OpenAPI workflow: update schemas/routes/tests, run `npm run api`, and review the OpenAPI snapshot for public contract changes.
 
 ## API contract
 
@@ -105,8 +105,8 @@ Inside server API routes, do not read or forward that token manually. Use server
 
 ```bash
 bkper auth login
-bun install
-bun run dev
+npm install
+npm run dev
 ```
 
 This runs:
@@ -119,7 +119,7 @@ This runs:
 Before considering a code change complete, run the deterministic root check:
 
 ```bash
-bun run check
+npm run check
 ```
 
 This first validates the guidance markers, then regenerates derived API/environment types, typechecks and tests the app against them, verifies production builds, checks formatting, and fails if tracked generated files are stale.
@@ -127,13 +127,13 @@ This first validates the guidance markers, then regenerates derived API/environm
 ## Build and deploy
 
 ```bash
-bun run deploy:preview # local build + explicit preview deployment
-bun run deploy         # local build + explicit production deployment
+npm run deploy:preview # local build + explicit preview deployment
+npm run deploy         # local build + explicit production deployment
 ```
 
 Git push never deploys. Managed sync/deploy safely push a clean committed attached branch and deployment verifies that exact remote commit before uploading the existing local build. This is best-effort source provenance, not reproducible remote CI. External and monorepo workflows retain direct upload behavior.
 
-For a managed rollback, create an attached `rollback/<name>` branch at the selected commit, build locally, and deploy explicitly. To clone managed source, run `bkper app clone <appId> [path]`, enter the clone, and run `bun install`; clone never executes repository lifecycle scripts.
+For a managed rollback, create an attached `rollback/<name>` branch at the selected commit, build locally, and deploy explicitly. To clone managed source, run `bkper app clone <appId> [path]`, enter the clone, and run `npm install`; clone never executes repository lifecycle scripts.
 
 Build output:
 
@@ -231,7 +231,7 @@ deployment:
 | Add API schemas            | `server/src/api/schemas.ts`                                     |
 | Add API endpoints          | `server/src/api/routes.ts`                                      |
 | Add server behavior        | `server/src/services/`                                          |
-| Regenerate API types       | `bun run api`                                                   |
+| Regenerate API types       | `npm run api`                                                   |
 | Handle events              | `server/src/events/routes.ts` and `server/src/events/handlers/` |
 | Configure app              | `bkper.yaml`                                                    |
 <!-- APP_SPECIFICS:END -->

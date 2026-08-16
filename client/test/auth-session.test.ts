@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { createAuthSession, isLocalDevelopmentHost } from '../src/auth/auth-session';
 import type { AuthClient } from '../src/auth/auth-session';
 import type { BkperAuthConfig } from '@bkper/web-auth';

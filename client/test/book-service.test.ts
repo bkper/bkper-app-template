@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { createBkperClientConfig, createBookService } from '../src/services/book-service';
 import type { AppApi } from '../src/api/app-api';
 import type { BrowserBkperClient } from '../src/services/book-service';

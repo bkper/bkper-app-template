@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import app from '../src/index';
 
 const openApiSnapshotUrl = new URL('./openapi.snapshot.json', import.meta.url);

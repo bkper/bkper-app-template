@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it } from 'vitest';
 import { Bkper, Book } from 'bkper-js';
 import type { Config } from 'bkper-js';
 import { AppContext, type AppContextFactory } from '../src/app-context';
@@ -279,9 +279,9 @@ describe('server Worker', () => {
         expect(response.status).toBe(200);
         expect(body).toEqual({ result: 'Created draft: 20% of Original sale - 20.00' });
         expect(apiRequests).toHaveLength(1);
-        expect(apiRequests[0].url).toStartWith(
-            'https://api.bkper.app/v5/books/book-1/transactions'
-        );
+        expect(
+            apiRequests[0].url.startsWith('https://api.bkper.app/v5/books/book-1/transactions')
+        ).toBe(true);
         expect(apiRequests[0].method).toBe('POST');
         expect(apiRequests[0].headers.get('bkper-oauth-token')).toBeNull();
         expect(apiRequests[0].headers.get('bkper-agent-id')).toBeNull();

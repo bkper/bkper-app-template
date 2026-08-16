@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it } from 'vitest';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -86,7 +86,7 @@ describe('checkUiBaseline', () => {
         const failures = await checkUiBaseline(root);
 
         expect(failures.join('\n')).toContain('Missing .agents/skills/webawesome-design/SKILL.md');
-        expect(failures.join('\n')).toContain('bun run agent:skills');
+        expect(failures.join('\n')).toContain('npm run agent:skills');
     });
 
     it('fails when the theme init script does not load before the app module', async () => {
