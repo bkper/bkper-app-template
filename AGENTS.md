@@ -18,6 +18,8 @@ Treat the app API as a first-class product surface:
 
 When adding API behavior, update the server schema and route, add or update unit tests, regenerate the typed client API types with `npm run api`, and intentionally update the OpenAPI snapshot when the public contract changes.
 
+Keep `README.md` focused on end users because it appears on the app listing. Include concise API access details when relevant, but keep development setup, architecture, source control, and compatibility rules in `AGENTS.md` or internal documentation.
+
 ## Authentication
 
 Do not implement custom OAuth flows, redirect handling, or token refresh.

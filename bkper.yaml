@@ -8,7 +8,7 @@ description: A Bkper app that does something useful
 logoUrl: https://my-app.bkper.app/images/logo-light.svg
 logoUrlDark: https://my-app.bkper.app/images/logo-dark.svg
 
-website: https://bkper.com/apps/bkper-cli
+website: https://my-app.bkper.app
 ownerName: Bkper
 ownerLogoUrl: https://avatars.githubusercontent.com/u/11943086?v=4
 ownerWebsite: https://bkper.com
@@ -18,8 +18,7 @@ users: someuser *@yoursite.com
 
 menuUrl: https://my-app.bkper.app?bookId=${book.id}
 menuUrlDev: https://my-app-preview.bkper.app?bookId=${book.id}
-menuPopupWidth: 500
-menuPopupHeight: 300
+menuOpenMode: SIDEBAR
 
 webhookUrl: https://my-app.bkper.app/events
 webhookUrlDev: https://my-app-preview.bkper.app/events
