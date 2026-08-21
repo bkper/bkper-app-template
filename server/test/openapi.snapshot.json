@@ -20,67 +20,6 @@
         }
       }
     },
-    "/api/v1/books": {
-      "get": {
-        "tags": [
-          "API"
-        ],
-        "summary": "List accessible books",
-        "description": "Returns the books visible to the authenticated user.",
-        "responses": {
-          "200": {
-            "description": "Accessible books",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BooksResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication failed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Permission denied",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Unexpected API error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/books/{bookId}/balances": {
       "get": {
         "tags": [
@@ -174,18 +113,22 @@
         "source"
       ]
     },
-    "BooksResponse": {
+    "BookBalancesResponse": {
       "type": "object",
       "properties": {
-        "books": {
+        "book": {
+          "$ref": "#/components/schemas/BookSummary"
+        },
+        "balances": {
           "type": "array",
           "items": {
-            "$ref": "#/components/schemas/BookSummary"
+            "$ref": "#/components/schemas/BalanceContainer"
           }
         }
       },
       "required": [
-        "books"
+        "book",
+        "balances"
       ]
     },
     "BookSummary": {
@@ -203,6 +146,23 @@
       "required": [
         "id",
         "name"
+      ]
+    },
+    "BalanceContainer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Cash"
+        },
+        "cumulativeBalanceText": {
+          "type": "string",
+          "example": "1,234.56"
+        }
+      },
+      "required": [
+        "name",
+        "cumulativeBalanceText"
       ]
     },
     "ErrorResponse": {
@@ -236,41 +196,6 @@
       "required": [
         "success",
         "error"
-      ]
-    },
-    "BookBalancesResponse": {
-      "type": "object",
-      "properties": {
-        "book": {
-          "$ref": "#/components/schemas/BookSummary"
-        },
-        "balances": {
-          "type": "array",
-          "items": {
-            "$ref": "#/components/schemas/BalanceContainer"
-          }
-        }
-      },
-      "required": [
-        "book",
-        "balances"
-      ]
-    },
-    "BalanceContainer": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "example": "Cash"
-        },
-        "cumulativeBalanceText": {
-          "type": "string",
-          "example": "1,234.56"
-        }
-      },
-      "required": [
-        "name",
-        "cumulativeBalanceText"
       ]
     }
   }

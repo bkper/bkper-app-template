@@ -39,7 +39,6 @@ function createBookService(overrides: Partial<BookService> = {}): BookService {
     return {
         getCurrentUser: async () => ({ displayName: 'Ada Lovelace' }),
         listBooksDirect: async () => [{ id: 'book-1', name: 'Main Book' }],
-        listBooksFromServer: async () => [{ id: 'book-2', name: 'Server Book' }],
         getBookBalances: async bookId => ({
             book: { id: bookId, name: 'Selected Book' },
             balances: [{ name: 'Cash', cumulativeBalanceText: '10.00' }],
@@ -69,7 +68,6 @@ describe('AppController', () => {
         expect(controller.state.loading).toBe(false);
         expect(controller.state.userDisplayName).toBe('Ada Lovelace');
         expect(controller.state.books).toEqual([{ id: 'book-1', name: 'Main Book' }]);
-        expect(controller.state.serverBooks).toEqual([{ id: 'book-2', name: 'Server Book' }]);
     });
 
     it('loads selected book balances when bookId is present in the URL', async () => {

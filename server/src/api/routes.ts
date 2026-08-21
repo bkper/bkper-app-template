@@ -5,12 +5,11 @@ import {
     apiErrorResponses,
     BookBalancesResponseSchema,
     BookIdParamSchema,
-    BooksResponseSchema,
     jsonResponse,
     PingResponseSchema,
 } from './schemas.js';
 import { buildApiError } from './errors.js';
-import { getBookBalances, listBooks } from '../services/book-service.js';
+import { getBookBalances } from '../services/book-service.js';
 import type { AppEnv } from '../app-context.js';
 
 type App = OpenAPIHono<AppEnv>;
@@ -22,18 +21,6 @@ const pingRoute = createRoute({
     summary: 'Ping app API',
     responses: {
         200: jsonResponse('API is reachable', PingResponseSchema),
-    },
-});
-
-const booksRoute = createRoute({
-    method: 'get',
-    path: '/api/v1/books',
-    tags: ['API'],
-    summary: 'List accessible books',
-    description: 'Returns the books visible to the authenticated user.',
-    responses: {
-        200: jsonResponse('Accessible books', BooksResponseSchema),
-        ...apiErrorResponses,
     },
 });
 
@@ -53,11 +40,6 @@ const bookBalancesRoute = createRoute({
 
 export function registerApiRoutes(app: App): void {
     app.openapi(pingRoute, c => c.json({ ok: true, source: 'my-app' }, 200));
-
-    app.openapi(booksRoute, async c => {
-        const context = c.get('appContext');
-        return c.json({ books: await listBooks(context) }, 200);
-    });
 
     app.openapi(bookBalancesRoute, async c => {
         const context = c.get('appContext');

@@ -40,81 +40,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/books": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List accessible books
-         * @description Returns the books visible to the authenticated user.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Accessible books */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["BooksResponse"];
-                    };
-                };
-                /** @description Invalid request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Authentication failed */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Permission denied */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                /** @description Unexpected API error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/books/{bookId}/balances": {
         parameters: {
             query?: never;
@@ -200,14 +125,21 @@ export interface components {
             /** @example my-app */
             source: string;
         };
-        BooksResponse: {
-            books: components["schemas"]["BookSummary"][];
+        BookBalancesResponse: {
+            book: components["schemas"]["BookSummary"];
+            balances: components["schemas"]["BalanceContainer"][];
         };
         BookSummary: {
             /** @example book_123 */
             id: string;
             /** @example Main Book */
             name: string;
+        };
+        BalanceContainer: {
+            /** @example Cash */
+            name: string;
+            /** @example 1,234.56 */
+            cumulativeBalanceText: string;
         };
         ErrorResponse: {
             /** @enum {boolean} */
@@ -219,16 +151,6 @@ export interface components {
                 message: string;
             };
         };
-        BookBalancesResponse: {
-            book: components["schemas"]["BookSummary"];
-            balances: components["schemas"]["BalanceContainer"][];
-        };
-        BalanceContainer: {
-            /** @example Cash */
-            name: string;
-            /** @example 1,234.56 */
-            cumulativeBalanceText: string;
-        };
     };
     responses: never;
     parameters: never;
@@ -237,10 +159,9 @@ export interface components {
     pathItems: never;
 }
 export type PingResponse = components['schemas']['PingResponse'];
-export type BooksResponse = components['schemas']['BooksResponse'];
-export type BookSummary = components['schemas']['BookSummary'];
-export type ErrorResponse = components['schemas']['ErrorResponse'];
 export type BookBalancesResponse = components['schemas']['BookBalancesResponse'];
+export type BookSummary = components['schemas']['BookSummary'];
 export type BalanceContainer = components['schemas']['BalanceContainer'];
+export type ErrorResponse = components['schemas']['ErrorResponse'];
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

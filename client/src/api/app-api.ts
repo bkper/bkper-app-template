@@ -2,13 +2,12 @@ import createClient from 'openapi-fetch';
 import type {
     BalanceContainer,
     BookBalancesResponse,
-    BookSummary,
     ErrorResponse,
     paths,
     PingResponse,
 } from './generated/types';
 
-export type { BalanceContainer, BookBalancesResponse, BookSummary, PingResponse };
+export type { BalanceContainer, BookBalancesResponse, PingResponse };
 export type ApiErrorResponse = ErrorResponse;
 
 export interface AppApiOptions {
@@ -84,14 +83,6 @@ export function createAppApi(options: AppApiOptions) {
                 throw toAppApiError(error, response);
             }
             return requireData(data, response);
-        },
-
-        async getBooks(): Promise<BookSummary[]> {
-            const { data, error, response } = await client.GET('/api/v1/books');
-            if (error) {
-                throw toAppApiError(error, response);
-            }
-            return requireData(data, response).books;
         },
 
         async getBookBalances(bookId: string): Promise<BookBalancesResponse> {

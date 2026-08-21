@@ -34,18 +34,12 @@ export class MyApp extends LitElement {
         }
 
         h1,
-        h2,
         p {
             margin: 0;
         }
 
         h1 {
             font-size: var(--bkper-font-size-large);
-            font-weight: var(--bkper-font-weight-bold);
-        }
-
-        h2 {
-            font-size: var(--bkper-font-size-medium);
             font-weight: var(--bkper-font-weight-bold);
         }
 
@@ -58,7 +52,6 @@ export class MyApp extends LitElement {
         }
 
         .subtitle,
-        .note,
         .hint {
             color: var(--bkper-color-neutral);
             font-size: var(--bkper-font-size-small);
@@ -122,10 +115,6 @@ export class MyApp extends LitElement {
         .back-action {
             justify-self: start;
         }
-
-        code {
-            font-family: var(--bkper-font-family-code);
-        }
     `;
 
     private readonly controller = new AppController(this);
@@ -173,29 +162,6 @@ export class MyApp extends LitElement {
                                       ${state.books.map(this.renderBookButton)}
                                   </div>
                               `
-                    }
-                </wa-card>
-
-                <wa-card appearance="outlined">
-                    <div slot="header" class="panel-header">
-                        <h2>Server API example</h2>
-                        <p class="note">
-                            These books are loaded through <code>/api/v1/books</code> with a bearer
-                            token. The platform validates it before the app server calls Bkper with
-                            outbound auth injection.
-                        </p>
-                    </div>
-
-                    ${
-                        state.serverBooksError
-                            ? this.renderCallout(state.serverBooksError, 'danger')
-                            : state.serverBooks.length === 0
-                              ? this.renderCallout('No books returned by server API')
-                              : html`
-                                    <div class="book-list">
-                                        ${state.serverBooks.map(this.renderBookButton)}
-                                    </div>
-                                `
                     }
                 </wa-card>
             </div>

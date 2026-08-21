@@ -6,7 +6,6 @@ import type { BrowserBkperClient } from '../src/services/book-service';
 function createAppApiStub(overrides: Partial<AppApi> = {}): AppApi {
     return {
         ping: async () => ({ ok: true, source: 'test' }),
-        getBooks: async () => [],
         getBookBalances: async bookId => ({
             book: { id: bookId, name: 'Test Book' },
             balances: [],
@@ -41,7 +40,10 @@ describe('createBookService', () => {
                 authenticatedFetch: async input => {
                     requests.push(new Request(input));
                     return new Response(
-                        JSON.stringify({ books: [{ id: 'book-1', name: 'Main Book' }] }),
+                        JSON.stringify({
+                            book: { id: 'book-1', name: 'Main Book' },
+                            balances: [],
+                        }),
                         { headers: { 'content-type': 'application/json' } }
                     );
                 },
@@ -54,10 +56,11 @@ describe('createBookService', () => {
             },
         });
 
-        await expect(service.listBooksFromServer()).resolves.toEqual([
-            { id: 'book-1', name: 'Main Book' },
-        ]);
-        expect(requests[0].url).toBe('http://localhost:5173/api/v1/books');
+        await expect(service.getBookBalances('book-1')).resolves.toEqual({
+            book: { id: 'book-1', name: 'Main Book' },
+            balances: [],
+        });
+        expect(requests[0].url).toBe('http://localhost:5173/api/v1/books/book-1/balances');
     });
 
     it('maps bkper-js user and books into component-ready data', async () => {
@@ -91,7 +94,7 @@ describe('createBookService', () => {
         ]);
     });
 
-    it('keeps server API data behind the service contract', async () => {
+    it('keeps balance API data behind the service contract', async () => {
         const service = createBookService({
             auth: {
                 authenticatedFetch: async () => new Response(),
@@ -103,7 +106,6 @@ describe('createBookService', () => {
                 getBooks: async () => [],
             },
             appApi: createAppApiStub({
-                getBooks: async () => [{ id: 'book-1', name: 'Main Book' }],
                 getBookBalances: async () => ({
                     book: { id: 'book-1', name: 'Main Book' },
                     balances: [{ name: 'Cash', cumulativeBalanceText: '10.00' }],
@@ -111,9 +113,6 @@ describe('createBookService', () => {
             }),
         });
 
-        await expect(service.listBooksFromServer()).resolves.toEqual([
-            { id: 'book-1', name: 'Main Book' },
-        ]);
         await expect(service.getBookBalances('book-1')).resolves.toEqual({
             book: { id: 'book-1', name: 'Main Book' },
             balances: [{ name: 'Cash', cumulativeBalanceText: '10.00' }],

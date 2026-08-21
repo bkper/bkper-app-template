@@ -88,30 +88,6 @@ describe('server Worker', () => {
         expect(contextCreations).toBe(1);
     });
 
-    it('returns books from an injected request context', async () => {
-        const testApp = createApp(
-            createContextFactory(
-                createBkperStub({
-                    getBooks: async () => [
-                        createBookStub({ id: 'book-1', name: 'Main Book' }),
-                        createBookStub({ id: 'book-2', name: 'Operations Book' }),
-                    ],
-                })
-            )
-        );
-
-        const response = await testApp.request('/api/v1/books');
-        const body = await response.json();
-
-        expect(response.status).toBe(200);
-        expect(body).toEqual({
-            books: [
-                { id: 'book-1', name: 'Main Book' },
-                { id: 'book-2', name: 'Operations Book' },
-            ],
-        });
-    });
-
     it('returns book balances from an injected request context', async () => {
         const testApp = createApp(
             createContextFactory(
@@ -146,7 +122,7 @@ describe('server Worker', () => {
         const testApp = createApp(
             createContextFactory(
                 createBkperStub({
-                    getBooks: async () => {
+                    getBook: async () => {
                         throw new Error('Login Required.');
                     },
                 })
@@ -156,7 +132,7 @@ describe('server Worker', () => {
         console.error = () => undefined;
 
         try {
-            const response = await testApp.request('/api/v1/books');
+            const response = await testApp.request('/api/v1/books/book-1/balances');
             const body = await response.json();
 
             expect(response.status).toBe(500);

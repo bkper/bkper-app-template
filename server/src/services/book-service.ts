@@ -19,12 +19,6 @@ export interface BookBalancesResult {
 const UNTITLED_BOOK_NAME = 'Untitled book';
 const UNNAMED_BALANCE_CONTAINER = 'Unnamed account';
 
-export async function listBooks(context: AppContext): Promise<BookSummary[]> {
-    const books = await context.bkper.getBooks();
-
-    return books.map(toBookSummary).filter((book): book is BookSummary => Boolean(book));
-}
-
 export async function getBookBalances(
     context: AppContext,
     bookId: string

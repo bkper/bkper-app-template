@@ -77,7 +77,6 @@ export class AppController implements ReactiveController {
                 await this.loadBook(this.state.bookId);
             } else {
                 this.setState({ books: await this.bookService.listBooksDirect() });
-                await this.loadServerBooks();
             }
         } catch (error) {
             this.logger.error('Error loading data:', error);
@@ -102,20 +101,6 @@ export class AppController implements ReactiveController {
         } catch (error) {
             this.logger.error('Error loading book from server API:', error);
             this.setState({ selectedBookError: toErrorMessage(error) });
-        }
-    }
-
-    private async loadServerBooks(): Promise<void> {
-        this.setState({ serverBooksError: null });
-
-        try {
-            this.setState({ serverBooks: await this.bookService.listBooksFromServer() });
-        } catch (error) {
-            this.logger.error('Error loading books from server API:', error);
-            this.setState({
-                serverBooksError: toErrorMessage(error),
-                serverBooks: [],
-            });
         }
     }
 

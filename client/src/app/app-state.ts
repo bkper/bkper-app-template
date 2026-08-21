@@ -4,8 +4,6 @@ export interface AppState {
     loading: boolean;
     userDisplayName: string;
     books: BookListItem[];
-    serverBooks: BookListItem[];
-    serverBooksError: string | null;
     bookName: string | null;
     selectedBookError: string | null;
     balanceContainers: BalanceContainerItem[];
@@ -17,8 +15,6 @@ export function createInitialAppState(): AppState {
         loading: true,
         userDisplayName: '',
         books: [],
-        serverBooks: [],
-        serverBooksError: null,
         bookName: null,
         selectedBookError: null,
         balanceContainers: [],

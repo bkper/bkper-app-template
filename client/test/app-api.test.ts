@@ -9,23 +9,6 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 describe('createAppApi', () => {
-    it('loads books through the provided fetch implementation', async () => {
-        const requests: Request[] = [];
-        const api = createAppApi({
-            baseUrl: 'https://app.example.test',
-            fetch: async request => {
-                requests.push(request);
-                return jsonResponse({ books: [{ id: 'book-1', name: 'Main Book' }] });
-            },
-        });
-
-        const books = await api.getBooks();
-
-        expect(books).toEqual([{ id: 'book-1', name: 'Main Book' }]);
-        expect(requests).toHaveLength(1);
-        expect(requests[0].url).toBe('https://app.example.test/api/v1/books');
-    });
-
     it('loads book balances using a typed path parameter', async () => {
         const requests: Request[] = [];
         const api = createAppApi({
@@ -55,22 +38,22 @@ describe('createAppApi', () => {
                 jsonResponse(
                     {
                         success: false,
-                        error: { code: 'BOOKS_FAILED', message: 'Could not load books' },
+                        error: { code: 'BALANCES_FAILED', message: 'Could not load balances' },
                     },
                     500
                 ),
         });
 
-        await expect(api.getBooks()).rejects.toThrow('Could not load books');
+        await expect(api.getBookBalances('book-1')).rejects.toThrow('Could not load balances');
 
         try {
-            await api.getBooks();
-            throw new Error('Expected getBooks to throw');
+            await api.getBookBalances('book-1');
+            throw new Error('Expected getBookBalances to throw');
         } catch (error) {
             expect(error).toBeInstanceOf(AppApiError);
             if (error instanceof AppApiError) {
                 expect(error.status).toBe(500);
-                expect(error.code).toBe('BOOKS_FAILED');
+                expect(error.code).toBe('BALANCES_FAILED');
             }
         }
     });

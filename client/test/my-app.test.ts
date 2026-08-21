@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { render } from 'lit';
 import '../src/web-awesome';
 import { MyApp } from '../src/components/my-app';
+import type { AppController } from '../src/app/app-controller';
+import { createInitialAppState } from '../src/app/app-state';
 
 describe('MyApp component', () => {
     it('renders the loading state with Web Awesome components', () => {
@@ -21,5 +23,22 @@ describe('MyApp component', () => {
 
         expect(card).toBeInstanceOf(CardElement);
         expect(spinner).toBeInstanceOf(SpinnerElement);
+    });
+
+    it('renders one direct Book picker without duplicating the list through the app API', () => {
+        const app = new MyApp();
+        const controller = Reflect.get(app, 'controller') as AppController;
+        controller.state = {
+            ...createInitialAppState(),
+            loading: false,
+            userDisplayName: 'Ada',
+            books: [{ id: 'book-1', name: 'Main Book' }],
+        };
+        const container = document.createElement('div');
+
+        render(app.render(), container);
+
+        expect(container.querySelectorAll('wa-card')).toHaveLength(1);
+        expect(container.textContent).toContain('Main Book');
     });
 });

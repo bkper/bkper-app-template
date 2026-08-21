@@ -151,7 +151,7 @@ Build output:
 
 A Bkper app using the single Worker platform model:
 
-- **Client**: Lit + Web Awesome book picker and accounts list with balances, layered into component, controller, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`).
+- **Client**: Lit + Web Awesome direct Book picker and typed API-backed accounts list with balances, layered into component, controller, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`).
 - **Server**: Hono Worker serving typed OpenAPI `/api/v1/*` routes and `/events`.
 - **Events**: Creates a 20% draft transaction on `TRANSACTION_CHECKED`.
 
@@ -171,7 +171,6 @@ The client lets the authenticated user select an accessible Book and view its Ac
 | Resource or behavior | Route or implementation |
 | -------------------- | ----------------------- |
 | API health/ping | `GET /api/v1/ping` |
-| Accessible Books | `GET /api/v1/books` |
 | Account balances for a Book | `GET /api/v1/books/{bookId}/balances` |
 | OpenAPI contract | `GET /openapi.json` |
 | Checked transaction events | `POST /events` |

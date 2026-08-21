@@ -39,7 +39,6 @@ export interface BrowserBkperClient {
 export interface BookService {
     getCurrentUser(): Promise<UserProfile>;
     listBooksDirect(): Promise<BookListItem[]>;
-    listBooksFromServer(): Promise<BookListItem[]>;
     getBookBalances(bookId: string): Promise<BookBalancesView>;
 }
 
@@ -82,10 +81,6 @@ export function createBookService(options: BookServiceOptions): BookService {
         async listBooksDirect(): Promise<BookListItem[]> {
             const books = await bkper.getBooks();
             return books.map(toBookListItem);
-        },
-
-        async listBooksFromServer(): Promise<BookListItem[]> {
-            return appApi.getBooks();
         },
 
         async getBookBalances(bookId: string): Promise<BookBalancesView> {

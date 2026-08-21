@@ -37,7 +37,7 @@ BKPER_TOKEN="$(bkper auth token)"
 
 curl \
   -H "Authorization: Bearer ${BKPER_TOKEN}" \
-  "https://my-app.bkper.app/api/v1/books"
+  "https://my-app.bkper.app/api/v1/books/<book-id>/balances"
 ```
 
 ## Learn more

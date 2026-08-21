@@ -36,12 +36,6 @@ export const BookSummarySchema = z
     })
     .openapi('BookSummary');
 
-export const BooksResponseSchema = z
-    .object({
-        books: z.array(BookSummarySchema),
-    })
-    .openapi('BooksResponse');
-
 export const BalanceContainerSchema = z
     .object({
         name: z.string().openapi({ example: 'Cash' }),
