@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Book, Permission } from 'bkper-js';
 import { HTTPException } from 'hono/http-exception';
-import { requireViewPermission } from '../src/api/authorization';
+import { requireViewPermission } from '../../src/api/authorization';
 
 const cases = [
     { permission: Permission.OWNER, allowed: true },

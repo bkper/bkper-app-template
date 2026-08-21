@@ -88,7 +88,7 @@ API evolution rules:
 - Put breaking changes in a new namespace such as `/api/v2/*`; do not mutate existing `v1` contracts.
 - Add new versioned schemas only when a breaking payload shape is needed. Keep the old schema available for old routes.
 - Mark old operations with OpenAPI `deprecated: true` only after a migration path exists.
-- The committed contract snapshot is `server/test/openapi.snapshot.json`; update it only after reviewing the API change.
+- The committed contract snapshot is `server/test/api/openapi.snapshot.json`; update it only after reviewing the API change.
 
 Agent API change checklist:
 
@@ -128,7 +128,7 @@ npm run check
 
 This first validates the guidance markers, then regenerates derived API/environment types, typechecks and tests the app against them, verifies production builds, checks formatting, and fails if tracked generated files are stale.
 
-Unit tests must inject or mock Bkper clients and `fetch`; never read from or write to live Books.
+Unit tests must inject or mock Bkper clients and `fetch`; never read from or write to live Books. Mirror `src/` boundaries under each package's `test/` directory, while keeping package-wide setup and composition tests at the test root.
 
 ## Build and deploy
 
