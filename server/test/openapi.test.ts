@@ -35,6 +35,23 @@ describe('server OpenAPI contract', () => {
         });
     });
 
+    it('documents forwarded Bkper errors with a default response', async () => {
+        const response = await app.request('/openapi.json');
+        const spec = (await response.json()) as {
+            paths: Record<string, { get?: { responses?: Record<string, unknown> } }>;
+        };
+
+        const responses = spec.paths['/api/v1/books/{bookId}/balances']?.get?.responses;
+
+        expect(responses?.default).toMatchObject({
+            content: {
+                'application/json': {
+                    schema: { $ref: '#/components/schemas/ErrorResponse' },
+                },
+            },
+        });
+    });
+
     it('matches the committed public API contract snapshot', async () => {
         const response = await app.request('/openapi.json');
         expect(response.status).toBe(200);

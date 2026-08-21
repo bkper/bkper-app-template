@@ -29,10 +29,12 @@ export function createApp(createContext: AppContextFactory = createAppContext) {
     app.onError((err, c) => {
         if (c.req.path.startsWith('/api/')) {
             if (err instanceof HTTPException) {
-                return c.json(buildApiError(apiErrorCode(err.status), err.message), err.status);
+                return c.json(buildApiError(String(err.status), err.message), err.status);
             }
-            if (err instanceof BkperError && err.code === 403) {
-                return c.json(buildApiError('FORBIDDEN', err.message), 403);
+            if (err instanceof BkperError && err.code >= 400 && err.code <= 599) {
+                return Response.json(buildApiError(String(err.code), err.message), {
+                    status: err.code,
+                });
             }
             console.error(err);
             return c.json(buildApiError('INTERNAL_ERROR', 'An unexpected error occurred'), 500);
@@ -52,21 +54,6 @@ export function createApp(createContext: AppContextFactory = createAppContext) {
     app.get('*', c => c.env.ASSETS.fetch(c.req.raw));
 
     return app;
-}
-
-function apiErrorCode(status: number): string {
-    switch (status) {
-        case 400:
-            return 'INVALID_REQUEST';
-        case 401:
-            return 'UNAUTHORIZED';
-        case 403:
-            return 'FORBIDDEN';
-        case 404:
-            return 'NOT_FOUND';
-        default:
-            return 'HTTP_ERROR';
-    }
 }
 
 const app = createApp();

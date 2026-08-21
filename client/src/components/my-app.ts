@@ -239,9 +239,7 @@ export class MyApp extends LitElement {
 
     private renderCallout(message: string, variant: 'neutral' | 'danger' = 'neutral') {
         return html`
-            <wa-callout variant=${variant} appearance="outlined" size="s">
-                ${message}
-            </wa-callout>
+            <wa-callout variant=${variant} appearance="outlined" size="s">${message}</wa-callout>
         `;
     }
 

@@ -90,6 +90,16 @@
                 }
               }
             }
+          },
+          "default": {
+            "description": "Bkper API error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }

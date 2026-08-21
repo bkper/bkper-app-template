@@ -140,19 +140,19 @@ describe('server Worker', () => {
         expect(await response.json()).toEqual({
             success: false,
             error: {
-                code: 'FORBIDDEN',
+                code: '403',
                 message:
                     'Required Book permission: VIEWER, POSTER, EDITOR, or OWNER. Current: RECORDER.',
             },
         });
     });
 
-    it('preserves known Bkper authorization failures', async () => {
+    it('forwards controlled Bkper API errors without individual status mapping', async () => {
         const testApp = createApp(
             createContextFactory(
                 createBkperStub({
                     getBook: async () => {
-                        throw new BkperError(403, 'Book access denied', 'forbidden');
+                        throw new BkperError(401, 'You are not a collaborator on this Book');
                     },
                 })
             )
@@ -160,10 +160,10 @@ describe('server Worker', () => {
 
         const response = await testApp.request('/api/v1/books/book-1/balances');
 
-        expect(response.status).toBe(403);
+        expect(response.status).toBe(401);
         expect(await response.json()).toEqual({
             success: false,
-            error: { code: 'FORBIDDEN', message: 'Book access denied' },
+            error: { code: '401', message: 'You are not a collaborator on this Book' },
         });
     });
 

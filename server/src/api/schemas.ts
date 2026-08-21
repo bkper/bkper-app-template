@@ -66,4 +66,5 @@ export const apiErrorResponses = {
     401: jsonResponse('Authentication failed', ErrorResponseSchema),
     403: jsonResponse('Permission denied', ErrorResponseSchema),
     500: jsonResponse('Unexpected API error', ErrorResponseSchema),
+    default: jsonResponse('Bkper API error', ErrorResponseSchema),
 };
