@@ -1,4 +1,6 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { BkperError } from 'bkper-js';
+import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { buildApiError } from './api/errors.js';
@@ -25,10 +27,17 @@ export function createApp(createContext: AppContextFactory = createAppContext) {
     app.use(prettyJSON());
 
     app.onError((err, c) => {
-        console.error(err);
         if (c.req.path.startsWith('/api/')) {
-            return c.json(buildApiError('INTERNAL_ERROR', err.message), 500);
+            if (err instanceof HTTPException) {
+                return c.json(buildApiError(apiErrorCode(err.status), err.message), err.status);
+            }
+            if (err instanceof BkperError && err.code === 403) {
+                return c.json(buildApiError('FORBIDDEN', err.message), 403);
+            }
+            console.error(err);
+            return c.json(buildApiError('INTERNAL_ERROR', 'An unexpected error occurred'), 500);
         }
+        console.error(err);
         return c.json({ error: err.message }, 500);
     });
 
@@ -43,6 +52,21 @@ export function createApp(createContext: AppContextFactory = createAppContext) {
     app.get('*', c => c.env.ASSETS.fetch(c.req.raw));
 
     return app;
+}
+
+function apiErrorCode(status: number): string {
+    switch (status) {
+        case 400:
+            return 'INVALID_REQUEST';
+        case 401:
+            return 'UNAUTHORIZED';
+        case 403:
+            return 'FORBIDDEN';
+        case 404:
+            return 'NOT_FOUND';
+        default:
+            return 'HTTP_ERROR';
+    }
 }
 
 const app = createApp();

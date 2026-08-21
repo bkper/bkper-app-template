@@ -1,5 +1,6 @@
 import type { Book } from 'bkper-js';
 import type { AppContext } from '../app-context.js';
+import { requireViewPermission } from '../api/authorization.js';
 
 export interface BookSummary {
     id: string;
@@ -24,6 +25,7 @@ export async function getBookBalances(
     bookId: string
 ): Promise<BookBalancesResult> {
     const book = await context.bkper.getBook(bookId);
+    requireViewPermission(book);
     const report = await book.getBalancesReport('');
 
     return {

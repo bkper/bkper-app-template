@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { Bkper, Book } from 'bkper-js';
+import { Bkper, BkperError, Book, Permission } from 'bkper-js';
 import type { Config } from 'bkper-js';
 import { AppContext, type AppContextFactory } from '../src/app-context';
 import app, { createApp } from '../src/index';
@@ -13,10 +13,12 @@ function createBookStub(options: {
     id: string;
     name: string;
     balances?: BalanceContainerStub[];
+    permission?: Permission;
 }): Book {
     return {
         getId: () => options.id,
         getName: () => options.name,
+        getPermission: () => options.permission ?? Permission.VIEWER,
         getBalancesReport: async () => ({
             getBalancesContainers: () =>
                 (options.balances ?? []).map(balance => ({
@@ -30,7 +32,7 @@ function createBookStub(options: {
 function createBkperStub(overrides: Partial<Bkper> = {}): Bkper {
     return {
         getBooks: async () => [],
-        getBook: async bookId => createBookStub({ id: bookId, name: 'Test Book' }),
+        getBook: async (bookId: string) => createBookStub({ id: bookId, name: 'Test Book' }),
         getConfig: () => ({}) satisfies Config,
         ...overrides,
     } as unknown as Bkper;
@@ -118,12 +120,59 @@ describe('server Worker', () => {
         });
     });
 
-    it('returns JSON errors for uncaught server API failures', async () => {
+    it('rejects balance access without view permission', async () => {
+        const testApp = createApp(
+            createContextFactory(
+                createBkperStub({
+                    getBook: async bookId =>
+                        createBookStub({
+                            id: bookId,
+                            name: 'Recorder Book',
+                            permission: Permission.RECORDER,
+                        }),
+                })
+            )
+        );
+
+        const response = await testApp.request('/api/v1/books/book-1/balances');
+
+        expect(response.status).toBe(403);
+        expect(await response.json()).toEqual({
+            success: false,
+            error: {
+                code: 'FORBIDDEN',
+                message:
+                    'Required Book permission: VIEWER, POSTER, EDITOR, or OWNER. Current: RECORDER.',
+            },
+        });
+    });
+
+    it('preserves known Bkper authorization failures', async () => {
         const testApp = createApp(
             createContextFactory(
                 createBkperStub({
                     getBook: async () => {
-                        throw new Error('Login Required.');
+                        throw new BkperError(403, 'Book access denied', 'forbidden');
+                    },
+                })
+            )
+        );
+
+        const response = await testApp.request('/api/v1/books/book-1/balances');
+
+        expect(response.status).toBe(403);
+        expect(await response.json()).toEqual({
+            success: false,
+            error: { code: 'FORBIDDEN', message: 'Book access denied' },
+        });
+    });
+
+    it('hides unexpected server API failure details', async () => {
+        const testApp = createApp(
+            createContextFactory(
+                createBkperStub({
+                    getBook: async () => {
+                        throw new Error('Sensitive internal details');
                     },
                 })
             )
@@ -138,7 +187,10 @@ describe('server Worker', () => {
             expect(response.status).toBe(500);
             expect(body).toEqual({
                 success: false,
-                error: { code: 'INTERNAL_ERROR', message: 'Login Required.' },
+                error: {
+                    code: 'INTERNAL_ERROR',
+                    message: 'An unexpected error occurred',
+                },
             });
         } finally {
             console.error = originalConsoleError;
