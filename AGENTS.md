@@ -126,6 +126,8 @@ npm run check
 
 This first validates the guidance markers, then regenerates derived API/environment types, typechecks and tests the app against them, verifies production builds, checks formatting, and fails if tracked generated files are stale.
 
+Unit tests must inject or mock Bkper clients and `fetch`; never read from or write to live Books.
+
 ## Build and deploy
 
 ```bash
