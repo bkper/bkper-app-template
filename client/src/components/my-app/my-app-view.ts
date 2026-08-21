@@ -1,121 +1,12 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { AppController } from '../app/app-controller';
-import type { AppState } from '../app/app-state';
-import type { BalanceContainerItem, BookListItem } from '../services/book-service';
+import type { BalanceContainerItem, BookListItem } from '../../services/book-service';
+import { AppController, type AppState } from './my-app-controller';
+import { myAppCSS } from './my-app-css';
 
 @customElement('my-app')
 export class MyApp extends LitElement {
-    static styles = css`
-        :host {
-            display: block;
-            min-height: 100vh;
-            box-sizing: border-box;
-            padding: var(--bkper-spacing-large);
-            background: var(--bkper-color-background);
-            color: var(--bkper-color-text);
-            font-family: var(--bkper-font-family);
-        }
-
-        .container {
-            max-width: 720px;
-            margin: 0 auto;
-            display: grid;
-            gap: var(--bkper-spacing-large);
-        }
-
-        wa-card {
-            --spacing: var(--bkper-spacing-large);
-        }
-
-        .panel-header {
-            display: grid;
-            gap: var(--bkper-spacing-2x-small);
-        }
-
-        h1,
-        p {
-            margin: 0;
-        }
-
-        h1 {
-            font-size: var(--bkper-font-size-large);
-            font-weight: var(--bkper-font-weight-bold);
-        }
-
-        .eyebrow {
-            color: var(--bkper-color-primary);
-            font-size: var(--bkper-font-size-small);
-            font-weight: var(--bkper-font-weight-bold);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .subtitle,
-        .hint {
-            color: var(--bkper-color-neutral);
-            font-size: var(--bkper-font-size-small);
-            line-height: var(--bkper-line-height-normal);
-        }
-
-        .book-list,
-        .balance-list {
-            display: grid;
-            gap: var(--bkper-spacing-x-small);
-        }
-
-        .book-button {
-            width: 100%;
-        }
-
-        .book-button::part(base) {
-            width: 100%;
-            justify-content: flex-start;
-        }
-
-        .book-button-content,
-        .balance-row {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: var(--bkper-spacing-medium);
-        }
-
-        .book-name,
-        .balance-name {
-            font-weight: var(--bkper-font-weight-bold);
-            text-align: left;
-        }
-
-        .balance-row {
-            padding: var(--bkper-spacing-small) 0;
-            border-bottom: var(--bkper-border);
-        }
-
-        .balance-row:last-child {
-            border-bottom: none;
-        }
-
-        .balance-value {
-            color: var(--bkper-color-neutral);
-            font-family: var(--bkper-font-family-code);
-            white-space: nowrap;
-        }
-
-        .loading-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--bkper-spacing-small);
-            min-height: 8rem;
-            color: var(--bkper-color-neutral);
-        }
-
-        .back-action {
-            justify-self: start;
-        }
-    `;
+    static styles = myAppCSS;
 
     private readonly controller = new AppController(this);
 
@@ -163,7 +54,6 @@ export class MyApp extends LitElement {
                         <h1>Hello, ${state.userDisplayName}!</h1>
                         <p class="subtitle">Select a book to continue</p>
                     </div>
-
                     ${
                         state.books.length === 0
                             ? this.renderCallout('No books found')
@@ -184,7 +74,6 @@ export class MyApp extends LitElement {
                 <wa-button href="?" class="back-action" variant="brand" appearance="plain">
                     &larr; Back to books
                 </wa-button>
-
                 <wa-card appearance="outlined">
                     <div slot="header" class="panel-header">
                         <p class="eyebrow">Book balances</p>
@@ -199,7 +88,6 @@ export class MyApp extends LitElement {
                             ${state.selectedBookError ? state.bookId : 'Accounts'}
                         </p>
                     </div>
-
                     ${
                         state.selectedBookError
                             ? this.renderCallout(state.selectedBookError, 'danger')

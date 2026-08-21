@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { AppController } from '../src/app/app-controller';
+import { AppController } from '../../../src/components/my-app/my-app-controller';
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-import type { AuthSession, AuthSessionCallbacks } from '../src/auth/auth-session';
-import type { BookService } from '../src/services/book-service';
+import type { AuthSession, AuthSessionCallbacks } from '../../../src/auth/auth-session';
+import type { BookService } from '../../../src/services/book-service';
 
 class TestHost implements ReactiveControllerHost {
     readonly updateComplete = Promise.resolve(true);

@@ -36,7 +36,7 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 
 The root package orchestrates install, dev, test, build, and deploy. Keep browser UI dependencies in `client/package.json`, Worker dependencies in `server/package.json`, and root dependencies limited to cross-package tooling such as the Bkper CLI, Miniflare, and OpenAPI generation.
 
-Keep components focused on rendering and user intent. Register only the Web Awesome components used by the app in `web-awesome.ts`, and style with `@bkper/web-design` tokens. Put auth mechanics in `auth/`, Bkper/client API calls in `services/` and `api/`, and page loading/navigation flow in `app/`.
+Keep components focused on rendering and user intent. Register only the Web Awesome components used by the app in `web-awesome.ts`, and style with `@bkper/web-design` tokens. Put auth mechanics in `auth/` and Bkper/client API calls in `services/` and `api/`. For stateful feature components, co-locate view, controller, and CSS files in one component folder; keep simple presentational components in one file.
 
 Keep server route handlers thin. Put API shape and validation in `api/`, event transport concerns in `events/`, and business behavior in `services/`.
 
@@ -192,8 +192,7 @@ Client code is intentionally small but layered so template users see where each 
 client/src/
 ├── index.ts       — Browser entrypoint
 ├── web-awesome.ts — Web Awesome component registration for the client UI
-├── components/    — Lit presentation components only
-├── app/           — UI state and lifecycle orchestration
+├── components/    — Lit features with co-located view, controller, and CSS
 ├── auth/          — @bkper/web-auth session boundary
 ├── services/      — App use cases and bkper-js orchestration
 └── api/           — Typed /api/v1 client and generated OpenAPI types
@@ -225,8 +224,9 @@ deployment:
 
 | Task                       | File                                                            |
 | -------------------------- | --------------------------------------------------------------- |
-| Add UI rendering           | `client/src/components/my-app.ts`                               |
-| Add client page flow       | `client/src/app/app-controller.ts`                              |
+| Add UI rendering           | `client/src/components/my-app/my-app-view.ts`                   |
+| Add client page flow       | `client/src/components/my-app/my-app-controller.ts`             |
+| Add component styles       | `client/src/components/my-app/my-app-css.ts`                    |
 | Add Bkper client behavior  | `client/src/services/book-service.ts`                           |
 | Add typed client API calls | `client/src/api/app-api.ts`                                     |
 | Add client auth behavior   | `client/src/auth/auth-session.ts`                               |

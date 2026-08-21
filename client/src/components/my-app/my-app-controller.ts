@@ -4,11 +4,39 @@ import {
     type AuthProvider,
     type AuthSession,
     type AuthSessionCallbacks,
-} from '../auth/auth-session';
-import { createBookService, type BookService } from '../services/book-service';
-import { createInitialAppState, type AppState } from './app-state';
+} from '../../auth/auth-session';
+import {
+    createBookService,
+    type BalanceContainerItem,
+    type BookListItem,
+    type BookService,
+} from '../../services/book-service';
 
 const INITIAL_DATA_ERROR = 'Could not load your Bkper data. Please reload and try again.';
+
+export interface AppState {
+    loading: boolean;
+    appError: string | null;
+    userDisplayName: string;
+    books: BookListItem[];
+    bookName: string | null;
+    selectedBookError: string | null;
+    balanceContainers: BalanceContainerItem[];
+    bookId: string | null;
+}
+
+export function createInitialAppState(): AppState {
+    return {
+        loading: true,
+        appError: null,
+        userDisplayName: '',
+        books: [],
+        bookName: null,
+        selectedBookError: null,
+        balanceContainers: [],
+        bookId: null,
+    };
+}
 
 export interface AppControllerOptions {
     createAuthSession?: (callbacks: AuthSessionCallbacks) => AuthSession;

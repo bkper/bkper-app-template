@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { render } from 'lit';
-import '../src/web-awesome';
-import { MyApp } from '../src/components/my-app';
-import type { AppController } from '../src/app/app-controller';
-import { createInitialAppState } from '../src/app/app-state';
+import '../../../src/web-awesome';
+import {
+    AppController,
+    createInitialAppState,
+} from '../../../src/components/my-app/my-app-controller';
+import { MyApp } from '../../../src/components/my-app/my-app-view';
 
 describe('MyApp component', () => {
     it('renders the loading state with Web Awesome components', () => {
