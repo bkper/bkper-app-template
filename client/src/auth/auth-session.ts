@@ -11,8 +11,7 @@ export interface AuthSessionCallbacks {
 
 // @bkper/web-auth owns OAuth, token refresh, and redirects.
 export function createAuthSession(callbacks: AuthSessionCallbacks = {}): AuthSession {
-    let auth: BkperAuth;
-    auth = new BkperAuth({
+    const auth = new BkperAuth({
         baseUrl: isLocalDevelopmentHost(window.location.hostname)
             ? window.location.origin
             : undefined,
