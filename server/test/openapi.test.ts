@@ -33,6 +33,19 @@ describe('server OpenAPI contract', () => {
                 },
             },
         });
+        expect(schemas.Book).toEqual({
+            type: 'object',
+            additionalProperties: true,
+            'x-typescript-type': 'bkper.Book',
+        });
+        expect(schemas.BookBalancesResponse).toMatchObject({
+            properties: {
+                book: { $ref: '#/components/schemas/Book' },
+            },
+        });
+        expect(schemas.BookSummary).toBeUndefined();
+        expect(schemas.BalanceSummary).toBeDefined();
+        expect(schemas.BalanceContainer).toBeUndefined();
     });
 
     it('documents forwarded Bkper errors with a default response', async () => {

@@ -127,12 +127,12 @@
       "type": "object",
       "properties": {
         "book": {
-          "$ref": "#/components/schemas/BookSummary"
+          "$ref": "#/components/schemas/Book"
         },
         "balances": {
           "type": "array",
           "items": {
-            "$ref": "#/components/schemas/BalanceContainer"
+            "$ref": "#/components/schemas/BalanceSummary"
           }
         }
       },
@@ -141,24 +141,12 @@
         "balances"
       ]
     },
-    "BookSummary": {
+    "Book": {
       "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "example": "book_123"
-        },
-        "name": {
-          "type": "string",
-          "example": "Main Book"
-        }
-      },
-      "required": [
-        "id",
-        "name"
-      ]
+      "additionalProperties": true,
+      "x-typescript-type": "bkper.Book"
     },
-    "BalanceContainer": {
+    "BalanceSummary": {
       "type": "object",
       "properties": {
         "name": {

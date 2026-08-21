@@ -29,24 +29,27 @@ export const PingResponseSchema = z
     })
     .openapi('PingResponse');
 
-export const BookSummarySchema = z
-    .object({
-        id: z.string().openapi({ example: 'book_123' }),
-        name: z.string().openapi({ example: 'Main Book' }),
-    })
-    .openapi('BookSummary');
+// Bkper owns and validates its API payload. This schema documents a trusted response;
+// request bodies still require concrete Zod validation.
+export const BookSchema = z
+    .custom<bkper.Book>(value => value !== undefined)
+    .openapi('Book', {
+        type: 'object',
+        additionalProperties: true,
+        'x-typescript-type': 'bkper.Book',
+    });
 
-export const BalanceContainerSchema = z
+export const BalanceSummarySchema = z
     .object({
         name: z.string().openapi({ example: 'Cash' }),
         cumulativeBalanceText: z.string().openapi({ example: '1,234.56' }),
     })
-    .openapi('BalanceContainer');
+    .openapi('BalanceSummary');
 
 export const BookBalancesResponseSchema = z
     .object({
-        book: BookSummarySchema,
-        balances: z.array(BalanceContainerSchema),
+        book: BookSchema,
+        balances: z.array(BalanceSummarySchema),
     })
     .openapi('BookBalancesResponse');
 

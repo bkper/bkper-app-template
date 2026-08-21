@@ -3,6 +3,7 @@
  * Do not make direct changes to the file.
  */
 
+import "@bkper/bkper-api-types";
 export interface paths {
     "/api/v1/ping": {
         parameters: {
@@ -135,16 +136,11 @@ export interface components {
             source: string;
         };
         BookBalancesResponse: {
-            book: components["schemas"]["BookSummary"];
-            balances: components["schemas"]["BalanceContainer"][];
+            book: components["schemas"]["Book"];
+            balances: components["schemas"]["BalanceSummary"][];
         };
-        BookSummary: {
-            /** @example book_123 */
-            id: string;
-            /** @example Main Book */
-            name: string;
-        };
-        BalanceContainer: {
+        Book: bkper.Book;
+        BalanceSummary: {
             /** @example Cash */
             name: string;
             /** @example 1,234.56 */
@@ -169,8 +165,8 @@ export interface components {
 }
 export type PingResponse = components['schemas']['PingResponse'];
 export type BookBalancesResponse = components['schemas']['BookBalancesResponse'];
-export type BookSummary = components['schemas']['BookSummary'];
-export type BalanceContainer = components['schemas']['BalanceContainer'];
+export type Book = components['schemas']['Book'];
+export type BalanceSummary = components['schemas']['BalanceSummary'];
 export type ErrorResponse = components['schemas']['ErrorResponse'];
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

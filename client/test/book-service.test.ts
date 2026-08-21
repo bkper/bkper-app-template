@@ -41,7 +41,7 @@ describe('createBookService', () => {
                     requests.push(new Request(input));
                     return new Response(
                         JSON.stringify({
-                            book: { id: 'book-1', name: 'Main Book' },
+                            book: { permission: 'VIEWER' },
                             balances: [],
                         }),
                         { headers: { 'content-type': 'application/json' } }
@@ -57,7 +57,7 @@ describe('createBookService', () => {
         });
 
         await expect(service.getBookBalances('book-1')).resolves.toEqual({
-            book: { id: 'book-1', name: 'Main Book' },
+            book: { id: 'book-1', name: 'Untitled book' },
             balances: [],
         });
         expect(requests[0].url).toBe('http://localhost:5173/api/v1/books/book-1/balances');

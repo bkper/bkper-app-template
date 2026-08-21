@@ -4,7 +4,7 @@ import type { Config } from 'bkper-js';
 import { AppContext, type AppContextFactory } from '../src/app-context';
 import app, { createApp } from '../src/index';
 
-interface BalanceContainerStub {
+interface BalanceSummaryStub {
     name: string;
     cumulativeBalanceText: string;
 }
@@ -12,13 +12,15 @@ interface BalanceContainerStub {
 function createBookStub(options: {
     id: string;
     name: string;
-    balances?: BalanceContainerStub[];
+    balances?: BalanceSummaryStub[];
     permission?: Permission;
 }): Book {
+    const permission = options.permission ?? Permission.VIEWER;
     return {
         getId: () => options.id,
         getName: () => options.name,
-        getPermission: () => options.permission ?? Permission.VIEWER,
+        getPermission: () => permission,
+        json: () => ({ id: options.id, name: options.name, permission }),
         getBalancesReport: async () => ({
             getBalancesContainers: () =>
                 (options.balances ?? []).map(balance => ({
@@ -112,7 +114,7 @@ describe('server Worker', () => {
 
         expect(response.status).toBe(200);
         expect(body).toEqual({
-            book: { id: 'book-1', name: 'Main Book' },
+            book: { id: 'book-1', name: 'Main Book', permission: Permission.VIEWER },
             balances: [
                 { name: 'Bank', cumulativeBalanceText: '123.45' },
                 { name: 'Sales', cumulativeBalanceText: '-123.45' },

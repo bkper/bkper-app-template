@@ -1,23 +1,16 @@
-import type { Book } from 'bkper-js';
 import type { AppContext } from '../app-context.js';
 import { requireViewPermission } from '../api/authorization.js';
 
-export interface BookSummary {
-    id: string;
-    name: string;
-}
-
-export interface BalanceContainerSummary {
+export interface BalanceSummary {
     name: string;
     cumulativeBalanceText: string;
 }
 
 export interface BookBalancesResult {
-    book: BookSummary;
-    balances: BalanceContainerSummary[];
+    book: bkper.Book;
+    balances: BalanceSummary[];
 }
 
-const UNTITLED_BOOK_NAME = 'Untitled book';
 const UNNAMED_BALANCE_CONTAINER = 'Unnamed account';
 
 export async function getBookBalances(
@@ -29,22 +22,10 @@ export async function getBookBalances(
     const report = await book.getBalancesReport('');
 
     return {
-        book: toBookSummary(book) ?? { id: bookId, name: UNTITLED_BOOK_NAME },
+        book: book.json(),
         balances: report.getBalancesContainers().map(container => ({
             name: container.getName() ?? UNNAMED_BALANCE_CONTAINER,
             cumulativeBalanceText: container.getCumulativeBalanceText(),
         })),
-    };
-}
-
-function toBookSummary(book: Book): BookSummary | undefined {
-    const id = book.getId();
-    if (!id) {
-        return undefined;
-    }
-
-    return {
-        id,
-        name: book.getName() ?? UNTITLED_BOOK_NAME,
     };
 }

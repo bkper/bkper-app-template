@@ -18,6 +18,7 @@
         "openapi-fetch": "^0.15.0"
     },
     "devDependencies": {
+        "@bkper/bkper-api-types": "latest",
         "happy-dom": "^20.10.2",
         "typescript": "^5",
         "vite": "^7"

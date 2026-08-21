@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import type { BalanceContainerItem, BookListItem } from '../../services/book-service';
+import type { BalanceSummary, BookListItem } from '../../services/book-service';
 import { AppController, type AppState } from './my-app-controller';
 import { myAppCSS } from './my-app-css';
 
@@ -118,7 +118,7 @@ export class MyApp extends LitElement {
         </wa-button>
     `;
 
-    private renderBalanceRow = (container: BalanceContainerItem) => html`
+    private renderBalanceRow = (container: BalanceSummary) => html`
         <div class="balance-row">
             <span class="balance-name">${container.name}</span>
             <span class="balance-value">${container.cumulativeBalanceText}</span>

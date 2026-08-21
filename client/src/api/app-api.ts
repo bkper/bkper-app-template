@@ -1,13 +1,13 @@
 import createClient from 'openapi-fetch';
 import type {
-    BalanceContainer,
+    BalanceSummary,
     BookBalancesResponse,
     ErrorResponse,
     paths,
     PingResponse,
 } from './generated/types';
 
-export type { BalanceContainer, BookBalancesResponse, PingResponse };
+export type { BalanceSummary, BookBalancesResponse, PingResponse };
 export type ApiErrorResponse = ErrorResponse;
 
 export interface AppApiOptions {

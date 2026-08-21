@@ -1,5 +1,5 @@
 import { Bkper, type Config } from 'bkper-js';
-import { createAppApi, type AppApi } from '../api/app-api';
+import { createAppApi, type AppApi, type BalanceSummary } from '../api/app-api';
 import type { AuthProvider } from '../auth/auth-session';
 
 export interface UserProfile {
@@ -11,14 +11,11 @@ export interface BookListItem {
     name: string;
 }
 
-export interface BalanceContainerItem {
-    name: string;
-    cumulativeBalanceText: string;
-}
+export type { BalanceSummary } from '../api/app-api';
 
 export interface BookBalancesView {
     book: BookListItem;
-    balances: BalanceContainerItem[];
+    balances: BalanceSummary[];
 }
 
 export interface BrowserBkperUser {
@@ -86,7 +83,10 @@ export function createBookService(options: BookServiceOptions): BookService {
         async getBookBalances(bookId: string): Promise<BookBalancesView> {
             const payload = await appApi.getBookBalances(bookId);
             return {
-                book: payload.book,
+                book: {
+                    id: payload.book.id ?? bookId,
+                    name: payload.book.name ?? UNTITLED_BOOK_NAME,
+                },
                 balances: payload.balances,
             };
         },

@@ -76,6 +76,8 @@ The app's public API lives under `/api/v1/*` and is documented at `/openapi.json
 
 Design API operations around the app's domain behavior, not around the current UI. The UI should call the same routes that another authenticated client could call.
 
+When an app API exposes a Bkper REST API payload, reference its canonical `bkper.*` type through `x-typescript-type`; do not recreate Bkper API interfaces locally. Follow `BookSchema` in `server/src/api/schemas.ts`. This bridge provides compile-time types only, so request bodies still require concrete Zod validation.
+
 API evolution rules:
 
 - `/openapi.json` is the single canonical public contract. It may contain multiple API versions over time.

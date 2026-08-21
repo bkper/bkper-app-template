@@ -7,7 +7,7 @@ import {
 } from '../../auth/auth-session';
 import {
     createBookService,
-    type BalanceContainerItem,
+    type BalanceSummary,
     type BookListItem,
     type BookService,
 } from '../../services/book-service';
@@ -21,7 +21,7 @@ export interface AppState {
     books: BookListItem[];
     bookName: string | null;
     selectedBookError: string | null;
-    balanceContainers: BalanceContainerItem[];
+    balanceContainers: BalanceSummary[];
     bookId: string | null;
 }
 
