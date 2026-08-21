@@ -2,6 +2,7 @@ import type { BalanceContainerItem, BookListItem } from '../services/book-servic
 
 export interface AppState {
     loading: boolean;
+    appError: string | null;
     userDisplayName: string;
     books: BookListItem[];
     bookName: string | null;
@@ -13,6 +14,7 @@ export interface AppState {
 export function createInitialAppState(): AppState {
     return {
         loading: true,
+        appError: null,
         userDisplayName: '',
         books: [],
         bookName: null,

@@ -8,6 +8,8 @@ import {
 import { createBookService, type BookService } from '../services/book-service';
 import { createInitialAppState, type AppState } from './app-state';
 
+const INITIAL_DATA_ERROR = 'Could not load your Bkper data. Please reload and try again.';
+
 export interface AppControllerOptions {
     createAuthSession?: (callbacks: AuthSessionCallbacks) => AuthSession;
     createBookService?: (auth: AuthProvider) => BookService;
@@ -44,9 +46,7 @@ export class AppController implements ReactiveController {
 
         this.auth = authFactory({
             onLoginSuccess: () => this.loadData(),
-            onError: error => {
-                this.logger.error('Auth error:', error);
-            },
+            onError: error => this.showInitialError('Auth error:', error),
         });
         this.bookService = bookServiceFactory(this.auth);
     }
@@ -57,7 +57,11 @@ export class AppController implements ReactiveController {
 
     async initialize(): Promise<void> {
         this.setState({ bookId: getBookIdFromSearch(this.getSearch()) });
-        await this.auth.init();
+        try {
+            await this.auth.init();
+        } catch (error) {
+            this.showInitialError('Auth error:', error);
+        }
     }
 
     selectBook(bookId: string): void {
@@ -67,7 +71,7 @@ export class AppController implements ReactiveController {
     }
 
     private async loadData(): Promise<void> {
-        this.setState({ loading: true });
+        this.setState({ loading: true, appError: null });
 
         try {
             const user = await this.bookService.getCurrentUser();
@@ -79,7 +83,7 @@ export class AppController implements ReactiveController {
                 this.setState({ books: await this.bookService.listBooksDirect() });
             }
         } catch (error) {
-            this.logger.error('Error loading data:', error);
+            this.showInitialError('Error loading data:', error);
         } finally {
             this.setState({ loading: false });
         }
@@ -102,6 +106,11 @@ export class AppController implements ReactiveController {
             this.logger.error('Error loading book from server API:', error);
             this.setState({ selectedBookError: toErrorMessage(error) });
         }
+    }
+
+    private showInitialError(message: string, error: unknown): void {
+        this.logger.error(message, error);
+        this.setState({ loading: false, appError: INITIAL_DATA_ERROR });
     }
 
     private setState(patch: Partial<AppState>): void {

@@ -135,6 +135,16 @@ export class MyApp extends LitElement {
             `;
         }
 
+        if (state.appError) {
+            return html`
+                <div class="container">
+                    <wa-card appearance="outlined">
+                        ${this.renderCallout(state.appError, 'danger')}
+                    </wa-card>
+                </div>
+            `;
+        }
+
         // Book view: show accounts with balances, or a visible load error.
         if (state.bookId) {
             return this.renderBookView(state);
@@ -229,9 +239,9 @@ export class MyApp extends LitElement {
 
     private renderCallout(message: string, variant: 'neutral' | 'danger' = 'neutral') {
         return html`
-            <wa-callout variant=${variant} appearance="outlined" size="small"
-                >${message}</wa-callout
-            >
+            <wa-callout variant=${variant} appearance="outlined" size="s">
+                ${message}
+            </wa-callout>
         `;
     }
 

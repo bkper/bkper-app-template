@@ -70,6 +70,54 @@ describe('AppController', () => {
         expect(controller.state.books).toEqual([{ id: 'book-1', name: 'Main Book' }]);
     });
 
+    it('shows a safe error when initial Bkper data cannot be loaded', async () => {
+        const host = new TestHost();
+        const authRef: { callbacks?: AuthSessionCallbacks } = {};
+        const controller = new AppController(host, {
+            getSearch: () => '',
+            createAuthSession: callbacks => {
+                authRef.callbacks = callbacks;
+                return createAuth();
+            },
+            createBookService: () =>
+                createBookService({
+                    getCurrentUser: async () => {
+                        throw new Error('Sensitive client details');
+                    },
+                }),
+            logger: { error: () => undefined },
+            navigate: () => undefined,
+        });
+
+        await controller.initialize();
+        await authRef.callbacks?.onLoginSuccess?.();
+
+        expect(controller.state.loading).toBe(false);
+        expect(controller.state.appError).toBe(
+            'Could not load your Bkper data. Please reload and try again.'
+        );
+    });
+
+    it('shows the same safe error when authentication fails', () => {
+        const host = new TestHost();
+        const authRef: { callbacks?: AuthSessionCallbacks } = {};
+        const controller = new AppController(host, {
+            createAuthSession: callbacks => {
+                authRef.callbacks = callbacks;
+                return createAuth();
+            },
+            createBookService: () => createBookService(),
+            logger: { error: () => undefined },
+        });
+
+        authRef.callbacks?.onError?.(new Error('Sensitive auth details'));
+
+        expect(controller.state.loading).toBe(false);
+        expect(controller.state.appError).toBe(
+            'Could not load your Bkper data. Please reload and try again.'
+        );
+    });
+
     it('loads selected book balances when bookId is present in the URL', async () => {
         const host = new TestHost();
         const authRef: { callbacks?: AuthSessionCallbacks } = {};
