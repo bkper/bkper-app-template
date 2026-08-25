@@ -3,6 +3,8 @@
 
 This section contains reusable architecture and quality guidance. It is editable, but preserve it by default and change it only when explicitly requested. Never replace this file wholesale merely to specialize the app. Preserve both guidance marker pairs and maintain the app-specific section as the app evolves.
 
+Follow the [Bkper App Quality Guidelines](https://bkper.com/docs/build/apps/quality) for all app development. Before implementing, refactoring, or reviewing this app, load `apps/quality.md` from the active Bkper reference bundle or use the published page. After implementation, review the changed code against the guidelines before considering the work complete.
+
 ## Architecture principles
 
 This template is intentionally opinionated. It should be enough to bootstrap an app and provide a strong basis for growing it.
@@ -120,13 +122,16 @@ This runs:
 
 ## Verification
 
-Before considering a code change complete, run the deterministic root check:
+Before considering a code change complete:
+
+1. Review the changed code against the Bkper App Quality Guidelines.
+2. Run the deterministic root check:
 
 ```bash
 npm run check
 ```
 
-This first validates the guidance markers, then regenerates derived API/environment types, typechecks and tests the app against them, verifies production builds, checks formatting, and fails if tracked generated files are stale.
+The quality review covers design concerns that automated checks cannot prove. The root check validates the guidance markers, regenerates derived API/environment types, typechecks and tests the app against them, verifies production builds, checks formatting, and fails if tracked generated files are stale.
 
 Unit tests must inject or mock Bkper clients and `fetch`; never read from or write to live Books. Mirror `src/` boundaries under each package's `test/` directory, while keeping package-wide setup and composition tests at the test root.
 
