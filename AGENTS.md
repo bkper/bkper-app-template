@@ -3,7 +3,7 @@
 
 This section contains reusable architecture and quality guidance. It is editable, but preserve it by default and change it only when explicitly requested. Never replace this file wholesale merely to specialize the app. Preserve both guidance marker pairs and maintain the app-specific section as the app evolves.
 
-Follow the [Bkper App Quality Guidelines](https://bkper.com/docs/build/apps/quality) for all app development. Before implementing, refactoring, or reviewing this app, load `apps/quality.md` from the active Bkper reference bundle or use the published page. After implementation, review the changed code against the guidelines before considering the work complete.
+Follow the Bkper App Quality Guidelines, indexed as `apps/quality.md`, when implementing, refactoring, or reviewing this app.
 
 ## Architecture principles
 
