@@ -51,7 +51,7 @@ export function createBkperClientConfig(auth: AuthProvider): Config {
     return {
         oauthTokenProvider: async () => auth.getAccessToken(),
         requestRetryHandler: async (status, _error, attempt) => {
-            if (status === 403 && attempt === 1) {
+            if (status === 401 && attempt === 1) {
                 await auth.refresh();
             }
         },

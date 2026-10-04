@@ -26,8 +26,9 @@ describe('createBookService', () => {
         });
 
         await expect(config.oauthTokenProvider?.()).resolves.toBe('token-123');
+        await config.requestRetryHandler?.(401, undefined, 1);
+        await config.requestRetryHandler?.(401, undefined, 2);
         await config.requestRetryHandler?.(403, undefined, 1);
-        await config.requestRetryHandler?.(403, undefined, 2);
         await config.requestRetryHandler?.(500, undefined, 1);
 
         expect(refreshCalls).toBe(1);
