@@ -1,17 +1,34 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import type { BalanceSummary, BookListItem } from '../../services/book-service';
-import { AppController, type AppState } from './my-app-controller';
+import { AppState } from '../../state/app-state';
+import type { Books } from '../../state/books';
+import { watch } from '../../state/store';
 import { myAppCSS } from './my-app-css';
 
 @customElement('my-app')
 export class MyApp extends LitElement {
     static styles = myAppCSS;
 
-    private readonly controller = new AppController(this);
+    readonly state = new AppState();
+
+    constructor() {
+        super();
+        watch(this, () => [this.state.route, this.state.books]);
+    }
+
+    connectedCallback(): void {
+        super.connectedCallback();
+        this.state.connect();
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback();
+        this.state.disconnect();
+    }
 
     render() {
-        const state = this.controller.state;
+        const state = this.state.books;
 
         if (state.loading) {
             return html`
@@ -37,15 +54,16 @@ export class MyApp extends LitElement {
         }
 
         // Book view: show accounts with balances, or a visible load error.
-        if (state.bookId) {
-            return this.renderBookView(state);
+        const bookId = this.state.route.bookId;
+        if (bookId) {
+            return this.renderBookView(state, bookId);
         }
 
         // Book picker: show list of books.
         return this.renderBookPicker(state);
     }
 
-    private renderBookPicker(state: AppState) {
+    private renderBookPicker(state: Books) {
         return html`
             <div class="container">
                 <wa-card appearance="outlined">
@@ -68,10 +86,15 @@ export class MyApp extends LitElement {
         `;
     }
 
-    private renderBookView(state: AppState) {
+    private renderBookView(state: Books, bookId: string) {
         return html`
             <div class="container">
-                <wa-button href="?" class="back-action" variant="brand" appearance="plain">
+                <wa-button
+                    class="back-action"
+                    variant="brand"
+                    appearance="plain"
+                    @click=${() => void this.state.books.select(undefined)}
+                >
                     &larr; Back to books
                 </wa-button>
                 <wa-card appearance="outlined">
@@ -84,9 +107,7 @@ export class MyApp extends LitElement {
                                     : (state.bookName ?? 'Selected book')
                             }
                         </h1>
-                        <p class="subtitle">
-                            ${state.selectedBookError ? state.bookId : 'Accounts'}
-                        </p>
+                        <p class="subtitle">${state.selectedBookError ? bookId : 'Accounts'}</p>
                     </div>
                     ${
                         state.selectedBookError
@@ -109,7 +130,7 @@ export class MyApp extends LitElement {
             class="book-button"
             variant="neutral"
             appearance="outlined"
-            @click=${() => this.handleBookClick(book.id)}
+            @click=${() => void this.state.books.select(book.id)}
         >
             <span class="book-button-content">
                 <span class="book-name">${book.name}</span>
@@ -129,10 +150,6 @@ export class MyApp extends LitElement {
         return html`
             <wa-callout variant=${variant} appearance="outlined" size="s">${message}</wa-callout>
         `;
-    }
-
-    private handleBookClick(bookId: string) {
-        this.controller.selectBook(bookId);
     }
 }
 

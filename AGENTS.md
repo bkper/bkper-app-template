@@ -38,7 +38,7 @@ Do not implement custom OAuth flows, redirect handling, or token refresh.
 
 The root package orchestrates install, dev, test, build, and deploy. Keep browser UI dependencies in `client/package.json`, Worker dependencies in `server/package.json`, and root dependencies limited to cross-package tooling such as the Bkper CLI, Miniflare, and OpenAPI generation.
 
-Keep components focused on rendering and user intent. Register only the Web Awesome components used by the app in `web-awesome.ts`, and style with `@bkper/web-design` tokens. Put auth mechanics in `auth/` and Bkper/client API calls in `services/` and `api/`. For stateful feature components, co-locate view, controller, and CSS files in one component folder; keep simple presentational components in one file.
+Keep components focused on rendering and user intent. Register only the Web Awesome components used by the app in `web-awesome.ts`, and style with `@bkper/web-design` tokens. Put auth mechanics in `auth/` and Bkper/client API calls in `services/` and `api/`. Keep shared client state in stores under `state/`, as the Client state guidelines describe: `route.ts` alone reads and writes the URL's path, query, and history, and `app-state.ts` creates and wires the stores. Co-locate each component's view and CSS in one component folder; keep simple presentational components in one file.
 
 Keep server route handlers thin. Put API shape and validation in `api/`, event transport concerns in `events/`, and business behavior in `services/`.
 
@@ -60,7 +60,7 @@ Preserve the template UI foundation:
 - Use Web Awesome components as the primary UI building blocks.
 - Style with `@bkper/web-design` tokens instead of ad-hoc design constants.
 - Keep the first-paint dark mode script in `client/index.html` before `/src/index.ts`.
-- Keep the client/server layering described above.
+- Keep the client/server layering described above, including client state in `state/` stores with the URL's path, query, and history only in `route.ts`.
 - Keep the typed API/OpenAPI workflow: update schemas/routes/tests, run `npm run api`, and review the OpenAPI snapshot for public contract changes.
 
 ## API contract
@@ -160,7 +160,7 @@ Build output:
 
 A Bkper app using the single Worker platform model:
 
-- **Client**: Lit + Web Awesome direct Book picker and typed API-backed accounts list with balances, layered into component, controller, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`).
+- **Client**: Lit + Web Awesome direct Book picker and typed API-backed accounts list with balances, layered into component, state, auth, service, and API concerns (`bkper-js` + `@bkper/web-auth`).
 - **Server**: Hono Worker serving typed OpenAPI `/api/v1/*` routes and `/events`.
 - **Events**: Creates a 20% draft transaction on `TRANSACTION_CHECKED`.
 
@@ -199,7 +199,8 @@ Client code is intentionally small but layered so template users see where each 
 client/src/
 ├── index.ts       — Browser entrypoint
 ├── web-awesome.ts — Web Awesome component registration for the client UI
-├── components/    — Lit features with co-located view, controller, and CSS
+├── components/    — Lit features with co-located view and CSS
+├── state/         — Stores: the URL (route), Books, and their wiring (app-state)
 ├── auth/          — @bkper/web-auth session boundary
 ├── services/      — App use cases and bkper-js orchestration
 └── api/           — Typed /api/v1 client and generated OpenAPI types
@@ -232,7 +233,8 @@ deployment:
 | Task                       | File                                                            |
 | -------------------------- | --------------------------------------------------------------- |
 | Add UI rendering           | `client/src/components/my-app/my-app-view.ts`                   |
-| Add client page flow       | `client/src/components/my-app/my-app-controller.ts`             |
+| Add shared client state    | `client/src/state/`                                             |
+| Change what the URL holds  | `client/src/state/route.ts`                                     |
 | Add component styles       | `client/src/components/my-app/my-app-css.ts`                    |
 | Add Bkper client behavior  | `client/src/services/book-service.ts`                           |
 | Add typed client API calls | `client/src/api/app-api.ts`                                     |

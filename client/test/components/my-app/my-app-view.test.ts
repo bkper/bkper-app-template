@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { render } from 'lit';
 import '../../../src/web-awesome';
-import {
-    AppController,
-    createInitialAppState,
-} from '../../../src/components/my-app/my-app-controller';
 import { MyApp } from '../../../src/components/my-app/my-app-view';
 
 describe('MyApp component', () => {
@@ -29,12 +25,8 @@ describe('MyApp component', () => {
 
     it('renders an initial data failure instead of an empty Book list', () => {
         const app = new MyApp();
-        const controller = Reflect.get(app, 'controller') as AppController;
-        controller.state = {
-            ...createInitialAppState(),
-            loading: false,
-            appError: 'Could not load your Bkper data. Please reload and try again.',
-        };
+        app.state.books.loading = false;
+        app.state.books.appError = 'Could not load your Bkper data. Please reload and try again.';
         const container = document.createElement('div');
 
         render(app.render(), container);
@@ -49,13 +41,9 @@ describe('MyApp component', () => {
 
     it('renders one direct Book picker without duplicating the list through the app API', () => {
         const app = new MyApp();
-        const controller = Reflect.get(app, 'controller') as AppController;
-        controller.state = {
-            ...createInitialAppState(),
-            loading: false,
-            userDisplayName: 'Ada',
-            books: [{ id: 'book-1', name: 'Main Book' }],
-        };
+        app.state.books.loading = false;
+        app.state.books.userDisplayName = 'Ada';
+        app.state.books.books = [{ id: 'book-1', name: 'Main Book' }];
         const container = document.createElement('div');
 
         render(app.render(), container);

@@ -31,6 +31,7 @@ const browserGlobals = [
     ['Node', browserWindow.Node],
     ['Document', browserWindow.Document],
     ['Event', browserWindow.Event],
+    ['EventTarget', browserWindow.EventTarget],
     ['CustomEvent', browserWindow.CustomEvent],
     ['ShadowRoot', browserWindow.ShadowRoot],
     ['CSSStyleSheet', browserWindow.CSSStyleSheet],
