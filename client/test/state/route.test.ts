@@ -67,6 +67,16 @@ describe('Route', () => {
         expect(writes).toEqual([]);
     });
 
+    it('writes no history when following Back to a URL that already shows the selection', () => {
+        const { page, writes } = createPage(
+            "https://my-app.bkper.app/?bookId=book-1&query=account%3A'Sales%20Revenue'"
+        );
+
+        new Route(page, false).select('book-1');
+
+        expect(writes).toEqual([]);
+    });
+
     it('reports Back and Forward while connected', () => {
         const { page, goTo } = createPage('https://my-app.bkper.app/?bookId=book-1');
         const route = new Route(page, false);

@@ -48,11 +48,11 @@ export class Route extends Store {
     /** Select a Book, or none for the Book list, and keep it in the URL. */
     select(bookId: string | undefined): void {
         this.bookId = bookId;
-        const current = this.page.location.href;
-        const url = new URL(current);
+        // Compare the value, not the URL text: setting a parameter re-encodes the whole query.
+        if (bookIdFrom(this.page.location.href) === bookId) return;
+        const url = new URL(this.page.location.href);
         if (bookId) url.searchParams.set('bookId', bookId);
         else url.searchParams.delete('bookId');
-        if (url.href === current) return;
         if (this.embedded) this.page.history.replaceState(this.page.history.state, '', url);
         else this.page.history.pushState(null, '', url);
     }
