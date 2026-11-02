@@ -120,6 +120,8 @@ This runs:
 - `vite dev` — client dev server with HMR
 - `bkper app dev` — one Miniflare Worker and an event tunnel to the same Worker when events are configured
 
+The Bkper Agent's sandbox sets `BKPER_LIVE_HOST` to show the App live: `client/vite.config.ts` then accepts that host and serves HMR through the page's own origin. Keep that branch when changing the Vite config.
+
 ## Verification
 
 Before considering a code change complete:
